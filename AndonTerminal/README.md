@@ -6,18 +6,27 @@
 
 ## Mỗi Terminal hiển thị gì?
 
-Mỗi instance Terminal chỉ hiển thị các **Lines được phân công** cho nó trong `Assets/Workstations_terminals.txt`.
+Mỗi instance Terminal chỉ hiển thị **Line được phân công** cho nó trong `Assets/Workstations_terminals.txt`.
 
 ```
-Ví dụ Workstations_terminals.txt:
+Ví dụ Workstations_terminals.txt (1 terminal = 1 line):
   0;010;Line 1;terminal01   ← terminal01 phụ trách Line 010
-  1;020;Line 2;terminal01   ← terminal01 phụ trách Line 020
-  2;030;Line 3;terminal02   ← terminal02 phụ trách Line 030
-  3;040;Line 4;terminal02   ← terminal02 phụ trách Line 040
+  1;020;Line 2;terminal02   ← terminal02 phụ trách Line 020
+  2;030;Line 3;terminal03   ← terminal03 phụ trách Line 030
+  3;040;Line 4;terminal04   ← terminal04 phụ trách Line 040
+  4;050;Line 5;terminal05   ← terminal05 phụ trách Line 050
+  5;060;Line 6;terminal06   ← terminal06 phụ trách Line 060
 ```
 
-Khi chạy `AndonTerminal.exe terminal01`, form chỉ hiển thị Line 1 và Line 2.  
+Khi chạy `AndonTerminal.exe terminal01`, form chỉ hiển thị Line 1 (1 hàng duy nhất).  
 *(So sánh không phân biệt chữ hoa/thường — `terminal01` và `Terminal01` đều khớp.)*
+
+> 💡 **Nếu cần 1 terminal phụ trách nhiều line** (ví dụ giám sát 2 line từ 1 màn hình),
+> chỉ cần gán cùng tên terminal cho nhiều dòng trong file:
+> ```
+> 0;010;Line 1;terminal01
+> 1;020;Line 2;terminal01   ← cùng terminal01 → hiển thị cả 2 hàng
+> ```
 
 ---
 
@@ -32,14 +41,17 @@ F5 để chạy
 ### Cách 2 — Command line
 ```bash
 cd AndonTerminal/bin/Debug/net8.0-windows/
-AndonTerminal.exe terminal01
-AndonTerminal.exe terminal02
+AndonTerminal.exe terminal01   # Line 1
+AndonTerminal.exe terminal02   # Line 2
+AndonTerminal.exe terminal03   # Line 3
+# ... mở 6 cửa sổ riêng biệt cho 6 terminal
 ```
 
 ### Cách 3 — dotnet run
 ```bash
 dotnet run --project AndonTerminal -- terminal01
 dotnet run --project AndonTerminal -- terminal02
+dotnet run --project AndonTerminal -- terminal06
 ```
 
 ---

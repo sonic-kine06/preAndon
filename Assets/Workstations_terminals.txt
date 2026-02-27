@@ -1,8 +1,8 @@
 6
 #;Workstation nr.;Workstation name;Terminal name;
 0;010;Line 1;terminal01
-1;020;Line 2;terminal01
-2;030;Line 3;terminal02
-3;040;Line 4;terminal02
-4;050;Line 5;terminal03
-5;060;Line 6;terminal03
+1;020;Line 2;terminal02
+2;030;Line 3;terminal03
+3;040;Line 4;terminal04
+4;050;Line 5;terminal05
+5;060;Line 6;terminal06

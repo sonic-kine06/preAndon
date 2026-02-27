@@ -144,5 +144,54 @@ namespace SharedLib.Services
                 labels.Add(GetAlarmLabel(i));
             return labels;
         }
+
+        // ─────────────── Cấu hình Email ───────────────
+
+        /// <summary>SMTP server nội bộ</summary>
+        public string EmailSmtpServer => Get("Email SMTP Server", "localhost");
+
+        /// <summary>Cổng SMTP</summary>
+        public int EmailSmtpPort => GetInt("Email SMTP Port", 587);
+
+        /// <summary>Sử dụng SSL/TLS</summary>
+        public bool EmailUseSsl => GetBool("Email Use SSL", false);
+
+        /// <summary>Địa chỉ email người gửi</summary>
+        public string EmailSenderAddress => Get("Email Sender Address", "");
+
+        /// <summary>Mật khẩu email người gửi</summary>
+        public string EmailSenderPassword => Get("Email Sender Password", "");
+
+        /// <summary>Danh sách email nhận báo cáo tuần (sếp lớn), phân cách bằng |</summary>
+        public string[] EmailBossRecipients => Get("Email Boss Recipients", "").Split(new[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        /// <summary>Danh sách email nhận cảnh báo real-time (quản lý KTV), phân cách bằng |</summary>
+        public string[] EmailManagerRecipients => Get("Email Manager Recipients", "").Split(new[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        /// <summary>Ngày trong tuần gửi báo cáo tuần (mặc định Sunday)</summary>
+        public DayOfWeek EmailWeeklyReportDay
+        {
+            get
+            {
+                string val = Get("Email Weekly Report Day", "Sunday");
+                if (Enum.TryParse(val, true, out DayOfWeek day)) return day;
+                return DayOfWeek.Sunday;
+            }
+        }
+
+        /// <summary>Giờ gửi báo cáo tuần (0-23, mặc định 20)</summary>
+        public int EmailWeeklyReportHour => GetInt("Email Weekly Report Hour", 20);
+
+        /// <summary>Số phút chưa có KTV nhận sự cố để gửi cảnh báo</summary>
+        public int EmailAlertNoTechMinutes => GetInt("Email Alert No Tech Minutes", 10);
+
+        /// <summary>Số phút KTV sửa quá lâu để gửi cảnh báo</summary>
+        public int EmailAlertLongRepairMinutes => GetInt("Email Alert Long Repair Minutes", 30);
+
+        /// <summary>Bật/tắt cảnh báo downtime bất thường</summary>
+        public bool EmailAlertAnomalyEnabled => GetBool("Email Alert Anomaly Enabled", true);
+
+        /// <summary>Bật/tắt nhắc nhở bảo dưỡng phòng ngừa</summary>
+        public bool EmailMaintenanceReminderEnabled => GetBool("Email Maintenance Reminder Enabled", true);
     }
 }

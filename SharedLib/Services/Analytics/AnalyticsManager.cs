@@ -169,5 +169,17 @@ namespace SharedLib.Services.Analytics
 
         /// <summary>Truy cập trực tiếp TimePatternDetector nếu cần</summary>
         public TimePatternDetector TimePatternDetector => _timePatternDetector;
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ► [TODO] MỞ RỘNG ANALYTICS — Thêm model hoặc method tùy chỉnh tại đây
+        // ──────────────────────────────────────────────────────────────────────
+        // Ví dụ các chức năng có thể mở rộng:
+        //   - GetLineHealthScore(lineNumber)    : điểm "sức khỏe" tổng thể 0-100
+        //   - GetShiftSummary(shiftStart, end)  : tổng kết theo ca làm việc
+        //   - PredictNextIncident(lineNumber)   : dự đoán lần sự cố tiếp theo
+        //   - GetMaintenanceSchedule()          : đề xuất lịch bảo trì phòng ngừa
+        //   - CompareLines(line1, line2)        : so sánh hiệu suất 2 line
+        // ══════════════════════════════════════════════════════════════════════
+
     }
 }

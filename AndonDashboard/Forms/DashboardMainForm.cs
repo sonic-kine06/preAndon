@@ -308,6 +308,19 @@ namespace AndonDashboard.Forms
                 }
             }
             _lblStatus.Text = $"  Cập nhật từ DB lúc {DateTime.Now:HH:mm:ss}";
+
+            // ══════════════════════════════════════════════════════════════════════
+            // ► [TODO] HOOK SAU KHI LOAD TRẠNG THÁI — Viết thêm logic tại đây
+            // ──────────────────────────────────────────────────────────────────────
+            // Ví dụ: hiển thị banner cảnh báo từ AnomalyDetector,
+            //        kiểm tra rủi ro thời gian hiện tại (TimePatternDetector),
+            //        load cấu hình bổ sung từ server, v.v.
+            //
+            // var analytics = new Analytics.AnalyticsManager("Data/eandon.db");
+            // var summary = analytics.GetDashboardSummary();
+            // if (summary.HasAnomalies)
+            //     ShowAnomalyBanner(summary.Anomalies[0].Description);
+            // ══════════════════════════════════════════════════════════════════════
         }
 
         // ─────────────── FileSystemWatcher ───────────────
@@ -501,5 +514,17 @@ namespace AndonDashboard.Forms
             _refreshTimer?.Stop();
             _watcher?.Dispose();
         }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ► [TODO] MỞ RỘNG DASHBOARD — Thêm methods tùy chỉnh của bạn tại đây
+        // ──────────────────────────────────────────────────────────────────────
+        // Ví dụ các chức năng có thể mở rộng:
+        //   - Hiển thị banner cảnh báo bất thường (AnomalyDetector)
+        //   - Vẽ biểu đồ xu hướng downtime (DowntimeEstimator)
+        //   - Kết nối màn hình lớn (TV/Monitor) qua Secondary Screen
+        //   - Gửi báo cáo tự động cuối ca / cuối ngày
+        //   - Tích hợp bản đồ nhà máy (factory map overlay)
+        // ══════════════════════════════════════════════════════════════════════
+
     }
 }

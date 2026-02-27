@@ -309,6 +309,19 @@ namespace AndonTerminal.Forms
                 cell.ActiveTicketId = ticket.TicketId;
                 UpdateCellUI(cell);
 
+                // ══════════════════════════════════════════════════════════════
+                // ► [TODO] HOOK SAU KHI TẠO TICKET — Viết thêm logic tại đây
+                // Ví dụ: hiển thị gợi ý KTV từ AnalyticsManager,
+                //        gửi thông báo ra ngoài, gọi API, v.v.
+                //
+                // var analytics = new Analytics.AnalyticsManager("Data/eandon.db");
+                // var gợiÝ = analytics.GetSuggestionForNewTicket(
+                //                 cell.LineNumber, cell.AlarmTypeIndex);
+                // if (gợiÝ.HasSuggestion)
+                //     MessageBox.Show(gợiÝ.SummaryText, "💡 Gợi ý",
+                //         MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // ══════════════════════════════════════════════════════════════
+
                 // Phát âm thanh cảnh báo
                 PlayAlarmSound();
             }
@@ -571,5 +584,17 @@ namespace AndonTerminal.Forms
                 }
             }
         }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ► [TODO] MỞ RỘNG TERMINAL — Thêm methods tùy chỉnh của bạn tại đây
+        // ──────────────────────────────────────────────────────────────────────
+        // Ví dụ các chức năng có thể mở rộng:
+        //   - Gửi SMS / email khi alarm phát sinh
+        //   - Kết nối API ngoài (ERP, MES) để đồng bộ ticket
+        //   - Tùy chỉnh logic màu sắc / âm thanh
+        //   - Thêm bước xác nhận trung gian (bước 4.5)
+        //   - Xuất báo cáo ca làm việc
+        // ══════════════════════════════════════════════════════════════════════
+
     }
 }

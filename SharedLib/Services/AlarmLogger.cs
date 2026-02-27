@@ -110,5 +110,17 @@ namespace SharedLib.Services
                 }
             }
         }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ► [TODO] MỞ RỘNG ALARM LOGGER — Thêm phương thức log tùy chỉnh tại đây
+        // ──────────────────────────────────────────────────────────────────────
+        // Ví dụ các chức năng có thể mở rộng:
+        //   - LogToDatabase(...)       : ghi log song song vào DB (thay vì chỉ file)
+        //   - LogToSyslog(...)         : ghi ra Windows Event Log
+        //   - SendToRemoteServer(...)  : đẩy log lên server tập trung qua HTTP
+        //   - ArchiveOldLogs(days)     : tự động nén / xóa log cũ hơn X ngày
+        //   - GetTodaySummary()        : đếm số alarm trong ngày hôm nay
+        // ══════════════════════════════════════════════════════════════════════
+
     }
 }

@@ -51,13 +51,15 @@ namespace AndonDashboard.Forms
         private List<WorkstationEntry> _workstations;
 
         // ─────────────── Màu 5 trạng thái ───────────────
-        private static readonly Color ColorGreen = Color.FromArgb(46, 204, 113);
-        private static readonly Color ColorYellow = Color.FromArgb(241, 196, 15);
-        private static readonly Color ColorRed = Color.FromArgb(192, 57, 43);
-        private static readonly Color ColorOrange = Color.FromArgb(230, 126, 34);
-        private static readonly Color ColorBlue = Color.FromArgb(52, 152, 219);
+        // Đồng bộ với TerminalMainForm để 2 ứng dụng hiển thị nhất quán.
+        // Sửa tại đây nếu muốn Dashboard có bảng màu khác Terminal.
+        private static readonly Color ColorGreen      = Color.FromArgb(46, 204, 113);
+        private static readonly Color ColorYellow     = Color.FromArgb(241, 196, 15);
+        private static readonly Color ColorRed        = Color.FromArgb(192, 57, 43);
+        private static readonly Color ColorOrange     = Color.FromArgb(230, 126, 34);
+        private static readonly Color ColorBlue       = Color.FromArgb(52, 152, 219);
         private static readonly Color ColorBackground = Color.FromArgb(44, 62, 80);
-        private static readonly Color ColorHeader = Color.FromArgb(36, 50, 64);
+        private static readonly Color ColorHeader     = Color.FromArgb(36, 50, 64);
 
         // Panel chứa grid (để dễ dàng cập nhật)
         private Panel _panelGrid;
@@ -84,28 +86,32 @@ namespace AndonDashboard.Forms
 
         private void InitializeUI()
         {
-            int alarmCount = _settings.NumberOfAlarmTypes;
-            int rowCount = _workstations.Count;
+            int alarmCount = _settings.NumberOfAlarmTypes;  // số cột = số loại alarm
+            int rowCount = _workstations.Count;              // số hàng = số line
 
-            int cellW = 130, cellH = 85;
-            int headerH = 55;
-            int rowHeaderW = 160;
-            int padding = 4;
+            // ── Kích thước ô Dashboard (hơi lớn hơn Terminal để dễ đọc từ xa) ──
+            // Thay đổi để phù hợp với màn hình TV/monitor của bạn
+            int cellW     = 130;  // rộng ô (px) — Dashboard thường rộng hơn Terminal
+            int cellH     = 85;   // cao ô (px)
+            int headerH   = 55;   // cao hàng tiêu đề (tên alarm)
+            int rowHeaderW = 160; // rộng cột tên line
+            int padding   = 4;    // khoảng cách giữa các ô
 
-            int formWidth = rowHeaderW + alarmCount * (cellW + padding) + padding * 3 + 40;
+            // +120 để chừa chỗ cho 2 panel phía trên (panelTop + panelLegend)
+            int formWidth  = rowHeaderW + alarmCount * (cellW + padding) + padding * 3 + 40;
             int formHeight = 120 + headerH + rowCount * (cellH + padding) + padding * 2 + 50;
 
             this.Text = "eAndon Dashboard — Tổng quan hệ thống";
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = ColorBackground;
-            this.Size = new Size(Math.Max(900, formWidth), Math.Max(600, formHeight));
+            this.Size = new Size(Math.Max(900, formWidth), Math.Max(600, formHeight));  // tối thiểu 900×600
 
-            // ── Panel header trên cùng ──
+            // ── Panel header trên cùng (chứa tiêu đề + đồng hồ + nút thống kê) ──
             var panelTop = new Panel
             {
                 BackColor = ColorHeader,
-                Dock = DockStyle.Top,
+                Dock = DockStyle.Top,   // dán vào cạnh trên
                 Height = 65
             };
             this.Controls.Add(panelTop);
@@ -121,6 +127,8 @@ namespace AndonDashboard.Forms
             };
             panelTop.Controls.Add(lblTitle);
 
+            // Đồng hồ số ở giữa header
+            // _lblTime là field (có _ ở đầu) vì cần cập nhật trong _refreshTimer
             _lblTime = new Label
             {
                 Text = DateTime.Now.ToString("HH:mm:ss  dd/MM/yyyy"),
@@ -132,7 +140,7 @@ namespace AndonDashboard.Forms
             };
             panelTop.Controls.Add(_lblTime);
 
-            // Nút thống kê
+            // Nút "📊 Thống kê" ở góc phải — mở StatisticsForm
             var btnStats = new Button
             {
                 Text = "📊 Thống kê",

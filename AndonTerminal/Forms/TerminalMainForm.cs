@@ -54,14 +54,16 @@ namespace AndonTerminal.Forms
         private System.Windows.Forms.Timer _updateTimer;
 
         // ─────────────── Màu 5 trạng thái ───────────────
-        private static readonly Color ColorGreen = Color.FromArgb(46, 204, 113);
-        private static readonly Color ColorYellow = Color.FromArgb(241, 196, 15);
-        private static readonly Color ColorRed = Color.FromArgb(192, 57, 43);
-        private static readonly Color ColorOrange = Color.FromArgb(230, 126, 34);
-        private static readonly Color ColorBlue = Color.FromArgb(52, 152, 219);
-        private static readonly Color ColorBackground = Color.FromArgb(44, 62, 80);
-        private static readonly Color ColorHeader = Color.FromArgb(36, 50, 64);
-        private static readonly Color ColorTextDark = Color.FromArgb(44, 62, 80);
+        // Thay đổi các giá trị Color.FromArgb(R, G, B) để đổi màu giao diện.
+        // Công cụ chọn màu: https://colorpicker.me/ — chọn màu → lấy R,G,B
+        private static readonly Color ColorGreen      = Color.FromArgb(46, 204, 113);   // xanh lá tươi
+        private static readonly Color ColorYellow     = Color.FromArgb(241, 196, 15);   // vàng
+        private static readonly Color ColorRed        = Color.FromArgb(192, 57, 43);    // đỏ đậm
+        private static readonly Color ColorOrange     = Color.FromArgb(230, 126, 34);   // cam (đang sửa)
+        private static readonly Color ColorBlue       = Color.FromArgb(52, 152, 219);   // xanh dương (chờ Leader)
+        private static readonly Color ColorBackground = Color.FromArgb(44, 62, 80);     // nền tối chính
+        private static readonly Color ColorHeader     = Color.FromArgb(36, 50, 64);     // nền header tối hơn
+        private static readonly Color ColorTextDark   = Color.FromArgb(44, 62, 80);     // chữ tối (trên nền vàng)
 
         public TerminalMainForm(SettingsReader settings, LineStationReader lineStationReader,
                                  IncidentService incidentService, AlarmLogger alarmLogger,
@@ -86,32 +88,36 @@ namespace AndonTerminal.Forms
 
         private void InitializeUI()
         {
-            int alarmCount = _settings.NumberOfAlarmTypes;
-            int rowCount = _workstations.Count;
+            // Đọc số cột (= số loại alarm) và số hàng (= số line) từ cấu hình
+            int alarmCount = _settings.NumberOfAlarmTypes;  // settings.txt: "Number of alarm types to display"
+            int rowCount = _workstations.Count;             // số dòng trong Workstations_terminals.txt
 
-            // Kích thước mỗi ô
-            int cellWidth = 120;
-            int cellHeight = 80;
-            int headerH = 50;
-            int rowHeaderW = 150;
-            int padding = 5;
+            // ── Kích thước mỗi ô trong grid ──
+            // Thay đổi các giá trị dưới đây để điều chỉnh kích thước grid
+            int cellWidth  = 120;  // chiều rộng ô (px) — tăng nếu cần hiển thị text dài hơn
+            int cellHeight = 80;   // chiều cao ô (px) — tăng nếu cần hiển thị 2 dòng text
+            int headerH    = 50;   // chiều cao hàng tiêu đề cột (tên Alarm)
+            int rowHeaderW = 150;  // chiều rộng cột tiêu đề hàng (tên Line) — tăng nếu tên dài
+            int padding    = 5;    // khoảng cách giữa các ô (px)
 
-            int formWidth = rowHeaderW + alarmCount * (cellWidth + padding) + padding * 2 + 20;
+            // Tự động tính kích thước form theo số hàng/cột
+            int formWidth  = rowHeaderW + alarmCount * (cellWidth + padding) + padding * 2 + 20;
             int formHeight = headerH + rowCount * (cellHeight + padding) + padding * 2 + 80;
 
             this.Text = $"eAndon Terminal — {_terminalName}";
-            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.FormBorderStyle = FormBorderStyle.Sizable;    // cho phép kéo to nhỏ
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = ColorBackground;
-            this.Size = new Size(Math.Max(800, formWidth), Math.Max(500, formHeight));
+            this.Size = new Size(Math.Max(800, formWidth), Math.Max(500, formHeight));  // tối thiểu 800×500
             this.MinimumSize = new Size(600, 400);
 
-            // ── Panel tiêu đề ──
+            // ── Panel tiêu đề (dải ngang trên cùng) ──
+            // DockStyle.Top = tự dãn hết chiều ngang, bám vào cạnh trên
             var panelHeader = new Panel
             {
-                BackColor = ColorHeader,
-                Bounds = new Rectangle(0, 0, this.Width, 60),
-                Dock = DockStyle.Top
+                BackColor = ColorHeader,                       // màu tối hơn nền chính
+                Bounds = new Rectangle(0, 0, this.Width, 60), // không dùng vì đã Dock
+                Dock = DockStyle.Top                           // dán vào cạnh trên form
             };
 
             var lblTitle = new Label
@@ -125,37 +131,43 @@ namespace AndonTerminal.Forms
             };
             panelHeader.Controls.Add(lblTitle);
 
-            // Nút thống kê (mở DashBoard từ Terminal - tùy chọn)
+            // Đồng hồ số ở góc phải header
+            // Name = "lblTime" để tìm lại trong RefreshGridAndWriteData()
+            // Anchor = Top|Right → khi resize form, label luôn ở góc trên phải
             var lblTime = new Label
             {
                 Name = "lblTime",
                 Text = DateTime.Now.ToString("HH:mm:ss  dd/MM/yyyy"),
-                ForeColor = Color.FromArgb(189, 195, 199),
+                ForeColor = Color.FromArgb(189, 195, 199),  // xám nhạt
                 Font = new Font("Segoe UI", 11f),
                 AutoSize = false,
                 Bounds = new Rectangle(this.Width - 280, 15, 260, 30),
                 TextAlign = ContentAlignment.MiddleRight,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Anchor = AnchorStyles.Top | AnchorStyles.Right  // quan trọng: bám góc phải
             };
             panelHeader.Controls.Add(lblTime);
-            this.Controls.Add(panelHeader);
+            this.Controls.Add(panelHeader);  // thêm panelHeader vào form
 
             // ── Panel Grid có thể scroll ──
+            // DockStyle.Fill = chiếm toàn bộ vùng còn lại sau header
+            // AutoScroll = true → tự hiện thanh cuộn khi grid vượt kích thước cửa sổ
             var panelGrid = new Panel
             {
                 AutoScroll = true,
                 BackColor = ColorBackground,
-                Bounds = new Rectangle(0, 60, this.Width, this.Height - 60),
-                Dock = DockStyle.Fill
+                Bounds = new Rectangle(0, 60, this.Width, this.Height - 60), // không dùng vì đã Dock
+                Dock = DockStyle.Fill  // chiếm phần còn lại
             };
             this.Controls.Add(panelGrid);
 
-            int startX = 10, startY = 10;
+            int startX = 10, startY = 10;  // điểm bắt đầu vẽ grid (offset từ góc trái trên của panelGrid)
 
-            // ── Header cột (Alarm Types) ──
+            // ── Header cột: tên các loại Alarm ──
+            // Vòng lặp từ 1 đến alarmCount (1-based theo settings.txt)
             for (int i = 1; i <= alarmCount; i++)
             {
-                string label = _settings.GetAlarmLabel(i);
+                string label = _settings.GetAlarmLabel(i);  // đọc từ "Alarm label 1", "Alarm label 2"...
+                // xPos tính từ: startX + cột header bên trái + (chỉ số cột - 1) * (rộng ô + padding)
                 int xPos = startX + rowHeaderW + (i - 1) * (cellWidth + padding);
 
                 var lblCol = new Label
@@ -171,13 +183,15 @@ namespace AndonTerminal.Forms
                 panelGrid.Controls.Add(lblCol);
             }
 
-            // ── Các hàng (Lines) ──
+            // ── Các hàng: một hàng = một Line sản xuất ──
             for (int row = 0; row < _workstations.Count; row++)
             {
                 var ws = _workstations[row];
+                // yPos: bắt đầu từ header + (hàng hiện tại * (cao ô + padding))
                 int yPos = startY + headerH + row * (cellHeight + padding);
 
-                // Label tên Line (bên trái)
+                // Label tên Line ở cột đầu tiên (bên trái)
+                // Hiển thị: "010\nLine 1" (số mã và tên)
                 var lblLine = new Label
                 {
                     Text = $"{ws.Number}\n{ws.Name}",
@@ -187,26 +201,30 @@ namespace AndonTerminal.Forms
                     AutoSize = false,
                     Bounds = new Rectangle(startX, yPos, rowHeaderW - 5, cellHeight),
                     TextAlign = ContentAlignment.MiddleCenter,
-                    Cursor = Cursors.Hand,
+                    Cursor = Cursors.Hand,  // con trỏ tay khi hover → gợi ý có thể click
                 };
 
-                // Click vào tên Line → xem lịch sử alarm
+                // Click vào tên Line → mở lịch sử alarm của line đó
+                // Dùng biến captured để tránh "closure bug" trong vòng lặp
                 string capturedLine = ws.Number;
                 string capturedLineName = ws.Name;
                 lblLine.Click += (s, e) => ShowLineHistory(capturedLine, capturedLineName);
                 panelGrid.Controls.Add(lblLine);
 
-                // Các ô alarm cho từng cột
+                // ── Tạo các ô alarm (Button) cho từng cột trong hàng này ──
                 for (int col = 1; col <= alarmCount; col++)
                 {
+                    // xPos: bắt đầu từ cột header bên trái + (chỉ số cột - 1) * (rộng + padding)
                     int xPos = startX + rowHeaderW + (col - 1) * (cellWidth + padding);
+                    // Key duy nhất để tra cứu cell: "010_1", "010_2", "020_1"...
                     string cellKey = $"{ws.Number}_{col}";
                     int capturedCol = col;
 
+                    // Mỗi ô là 1 Button với FlatStyle để trông như ô màu phẳng
                     var btn = new Button
                     {
                         Name = $"cell_{ws.Number}_{col}",
-                        Text = "✓",
+                        Text = "✓",                    // ký hiệu mặc định khi trạng thái Green
                         ForeColor = ColorTextDark,
                         BackColor = ColorGreen,
                         FlatStyle = FlatStyle.Flat,

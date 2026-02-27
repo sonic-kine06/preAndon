@@ -2,6 +2,32 @@
 // Mô tả: Popup cho phép Operator chọn trạm cụ thể khi một Line có nhiều Station.
 // Giao diện: nền tối, mỗi station là 1 nút lớn, click → chọn → đóng dialog.
 // Hiển thị khi bước [2] trong luồng 7 bước.
+//
+// GIAO DIỆN THỰC TẾ (kích thước tự động theo số station):
+// ╔══════════════════════════════════════╗
+// ║  Line: [lineName]    [xám nhạt]     ║ ← lblTitle
+// ║  Chọn trạm bị lỗi:  [bold trắng]   ║ ← lblInstruction
+// ╠══════════════════════════════════════╣
+// ║  ┌──────────────────────────────┐   ║
+// ║  │  ST-010-01                   │   ║ ← Button cho mỗi station
+// ║  │  Trạm cắt laser              │   ║   BackColor = xanh dương (52,152,219)
+// ║  └──────────────────────────────┘   ║   Hover → đậm hơn (41,128,185)
+// ║  ┌──────────────────────────────┐   ║
+// ║  │  ST-010-02 - Trạm hàn điểm  │   ║
+// ║  └──────────────────────────────┘   ║
+// ║  ... (mỗi station = 1 nút 320×70) ║
+// ╠══════════════════════════════════════╣
+// ║  [           Hủy              ]     ║ ← btnCancel (xám)
+// ╚══════════════════════════════════════╝
+//
+// KÍCH THƯỚC TỰ ĐỘNG:
+//   formWidth  = 360px (cố định)
+//   formHeight = 95 + (số station × 85) + 65
+//   → 2 station: ~320px cao | 4 station: ~490px cao
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Đổi sang layout 2 cột: xem hướng dẫn Docs/UI_CUSTOMIZE.md#6
+//   - Thêm icon trạm: thêm lblIcon trước text nút
 
 using System;
 using System.Collections.Generic;

@@ -1,6 +1,32 @@
 // File: AndonTerminal/Forms/FixCompleteForm.cs
 // Mô tả: Popup cho KTV nhập ghi chú sửa chữa khi hoàn thành bước 6.
 // Giao diện: TextBox multiline để nhập ghi chú + nút "Đã sửa xong".
+//
+// GIAO DIỆN THỰC TẾ (460×380):
+// ╔════════════════════════════════════════════════╗
+// ║  ✓ Hoàn thành sửa chữa           [xanh lá]   ║ ← lblTitle
+// ║  Line: [lineName] | Trạm: [stationName]       ║ ← lblInfo
+// ║  Loại: [alarmTypeName]                        ║
+// ╠════════════════════════════════════════════════╣
+// ║  Ghi chú sửa chữa (không bắt buộc):          ║ ← lblNote
+// ║  ┌──────────────────────────────────────────┐  ║
+// ║  │ [TextBox multiline, 4 dòng, scroll dọc] │  ║ ← _txtNote
+// ║  │ PlaceholderText: "Thay thế motor..."    │  ║
+// ║  └──────────────────────────────────────────┘  ║
+// ║                                                ║
+// ║  [ ✓ Đã sửa xong — Chờ Leader xác nhận ]     ║ ← btnDone (xanh lá, chiều ngang)
+// ║  [Hủy]                                        ║ ← btnCancel (xám, nhỏ)
+// ╚════════════════════════════════════════════════╝
+//
+// CÁC CONTROL CHÍNH:
+//   lblTitle   (Label)    Bounds=(20,15,420,30)   → ForeColor=xanh lá
+//   lblInfo    (Label)    Bounds=(20,50,420,40)   → hiển thị Line/Trạm/Loại
+//   _txtNote   (TextBox)  Bounds=(20,130,420,130) → Multiline=true, ScrollBars=Vertical
+//   btnDone    (Button)   Bounds=(20,275,420,50)  → FixNote = _txtNote.Text
+//   btnCancel  (Button)   Bounds=(20,330,130,30)  → DialogResult=Cancel
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Thêm dropdown nguyên nhân lỗi: xem hướng dẫn Docs/UI_CUSTOMIZE.md#7
 
 using System;
 using System.Drawing;

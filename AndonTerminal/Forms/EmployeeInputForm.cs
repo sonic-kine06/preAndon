@@ -4,6 +4,39 @@
 //   - KTV khi nhận sửa (Bước 5)
 //   - Leader khi xác nhận (Bước 7)
 // Validate: cả 2 trường không được trống.
+//
+// GIAO DIỆN THỰC TẾ (420×340):
+// ╔═══════════════════════════════════════════╗
+// ║   [title từ tham số constructor]          ║
+// ╠═══════════════════════════════════════════╣
+// ║  [instruction — xám nhạt]                 ║ ← lblInstruction
+// ║                                           ║
+// ║  Mã nhân viên *           [bold]          ║ ← lblId
+// ║  ┌─────────────────────────────────────┐  ║
+// ║  │ PlaceholderText: "Ví dụ: NV001"    │  ║ ← _txtEmployeeId
+// ║  └─────────────────────────────────────┘  ║
+// ║                                           ║
+// ║  Họ và tên *              [bold]          ║ ← lblName
+// ║  ┌─────────────────────────────────────┐  ║
+// ║  │ PlaceholderText: "Nguyễn Văn A"    │  ║ ← _txtEmployeeName
+// ║  └─────────────────────────────────────┘  ║
+// ║                                           ║
+// ║  ⚠ [lỗi validation — màu đỏ]            ║ ← _lblError (ẩn khi không lỗi)
+// ║                                           ║
+// ║  [  ✓ Xác nhận  ]  [  ✕ Hủy  ]         ║ ← btnOK (xanh lá), btnCancel (xám)
+// ╚═══════════════════════════════════════════╝
+//
+// CÁC CONTROL CHÍNH:
+//   _txtEmployeeId   (TextBox)   Bounds=(20,90,380,32)   → EmployeeId
+//   _txtEmployeeName (TextBox)   Bounds=(20,160,380,32)  → EmployeeName
+//   _lblError        (Label)     Bounds=(20,200,380,22)  → hiển thị lỗi
+//   btnOK            (Button)    Bounds=(20,230,180,45)  → validate + đóng
+//   btnCancel        (Button)    Bounds=(220,230,180,45) → DialogResult=Cancel
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Tiêu đề và hướng dẫn: truyền vào constructor (title, instruction)
+//   - Thêm trường mới: xem hướng dẫn trong Docs/UI_CUSTOMIZE.md#5
+//   - Đổi màu: sửa các const màu ở phần khai báo field
 
 using System;
 using System.Drawing;

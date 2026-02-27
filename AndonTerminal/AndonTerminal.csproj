@@ -10,7 +10,7 @@
     <AssemblyName>AndonTerminal</AssemblyName>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-
+    <ApplicationIcon>..\Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

@@ -414,5 +414,17 @@ namespace SharedLib.Services
                 ReportDate = reader["ReportDate"]?.ToString()
             };
         }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ► [TODO] MỞ RỘNG INCIDENT SERVICE — Thêm methods tùy chỉnh tại đây
+        // ──────────────────────────────────────────────────────────────────────
+        // Ví dụ các chức năng có thể mở rộng:
+        //   - GetTicketsByTechnician(techId)   : lấy danh sách ticket theo KTV
+        //   - GetTicketsByDateRange(from, to)  : lọc ticket theo khoảng ngày
+        //   - ExportToCsv(filePath)            : xuất toàn bộ ticket ra CSV
+        //   - SendWebhook(ticketId, eventType) : gửi thông báo webhook khi có sự kiện
+        //   - BulkCloseExpired(hours)          : tự động đóng ticket quá X giờ
+        // ══════════════════════════════════════════════════════════════════════
+
     }
 }

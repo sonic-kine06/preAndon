@@ -20,9 +20,9 @@ namespace AndonDashboard
 
             // ── Xác định đường dẫn base ──
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string assetsDir = Path.Combine(baseDir, "..", "..", "Assets");
-            string dataDir = Path.Combine(baseDir, "..", "..", "Data");
-            string logsDir = Path.Combine(baseDir, "..", "..", "Logs");
+            string assetsDir = Path.Combine(baseDir, "..", "..", "..", "..", "Assets");
+            string dataDir = Path.Combine(baseDir, "..", "..", "..", "..", "Data");
+            string logsDir = Path.Combine(baseDir, "..", "..", "..", "..", "Logs");
             string dbPath = Path.Combine(dataDir, "eandon.db");
 
             Directory.CreateDirectory(dataDir);
@@ -42,7 +42,7 @@ namespace AndonDashboard
 
             // ── Khởi chạy Dashboard ──
             Application.Run(new DashboardMainForm(
-                settings, lineStationReader, incidentService, statsService, dataDir));
+                settings, lineStationReader, incidentService, statsService, dataDir, assetsDir));
         }
     }
 }

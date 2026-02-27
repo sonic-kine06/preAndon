@@ -1,6 +1,43 @@
 // File: AndonDashboard/Forms/TicketDetailForm.cs
 // Mô tả: Form hiển thị chi tiết đầy đủ 1 ticket sự cố.
 // Thông tin gồm: ai báo, ai sửa, ai duyệt, thời gian từng bước, ghi chú.
+//
+// GIAO DIỆN THỰC TẾ (520×620, FixedDialog):
+// ╔══════════════════════════════════════════╗
+// ║  Chi tiết Phiếu — TKT-20260227-001      ║
+// ╠══════════════════════════════════════════╣
+// ║  Panel (AutoScroll=true, chiếm 520×580) ║
+// ║  ┌────────────────────────────────────┐  ║
+// ║  │  🎫 TKT-20260227-001     [xanh lá] │  ← AddLabel() 16pt Bold
+// ║  │  Trạng thái: Closed      [màu trạng thái]  ← AddLabel() 13pt Bold
+// ║  │                                     │
+// ║  │  ▓ 📍 Địa điểm           [header xanh dương] ← AddSection()
+// ║  │    Line:      010 — Line 1          │  ← AddRow() 2 Label cạnh nhau
+// ║  │    Trạm:      ST-010-01             │
+// ║  │    Loại alarm:[2] Hỗ trợ Bảo trì   │
+// ║  │    Mức độ:    Yellow                │
+// ║  │                                     │
+// ║  │  ▓ 👷 Bước 1-4: Operator           │  ← AddSection()
+// ║  │    Thời gian: 27/02/2026 08:30:00  │
+// ║  │    Mã NV:     NV001                 │
+// ║  │    Họ tên:    Nguyễn Văn A          │
+// ║  │                                     │
+// ║  │  ▓ 🔧 Bước 5: KTV nhận sửa        │
+// ║  │  ▓ ✅ Bước 6: KTV hoàn thành      │
+// ║  │  ▓ 👔 Bước 7: Leader xác nhận     │
+// ║  │  ▓ 📊 Tổng kết: 45 phút 30 giây   │
+// ║  └────────────────────────────────────┘  ║
+// ╠══════════════════════════════════════════╣
+// ║  [Đóng]    (Anchor=Bottom|Left)          ║
+// ╚══════════════════════════════════════════╝
+//
+// HELPER FUNCTIONS:
+//   AddSection(panel, ref y, title, w)  → tạo dải màu xanh làm tiêu đề nhóm
+//   AddRow(panel, ref y, label, value, w) → tạo cặp Label xám + Label trắng trên 1 dòng
+//   AddLabel(panel, ref y, text, color, size, style, w) → tạo label tự do
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Thêm nút "Copy" / "In phiếu": xem hướng dẫn Docs/UI_CUSTOMIZE.md#9
 
 using System;
 using System.Drawing;

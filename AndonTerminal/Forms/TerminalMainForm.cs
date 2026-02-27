@@ -5,11 +5,49 @@
 // Click ô → 7 bước luồng sự cố (Station → AlarmType → Employee → ...).
 // Timer cập nhật thời gian và ghi file Data/terminalXX.txt.
 // FileSystemWatcher không dùng ở Terminal (Terminal ghi, Dashboard đọc).
+//
+// GIAO DIỆN THỰC TẾ (kích thước tự động theo số Line × Alarm):
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  panelHeader (DockStyle.Top, Height=60, BackColor=ColorHeader)  ║
+// ║  ┌─────────────────────────────┐  ┌──────────────────────────┐  ║
+// ║  │ 🏭 eAndon Terminal |term01  │  │  08:30:15  27/02/2026    │  ║
+// ║  └─────────────────────────────┘  └──────────────────────────┘  ║
+// ║  lblTitle (14pt Bold)               lblTime (11pt, Anchor=Right) ║
+// ╠══════════════════════════════════════════════════════════════════╣
+// ║  panelGrid (DockStyle.Fill, AutoScroll=true)                    ║
+// ║                                                                  ║
+// ║  [startX,startY]                                                 ║
+// ║         ┌────────────┬────────────┬────────────┬─────────────┐  ║
+// ║         │ Hỗ trợ TL  │  Bảo trì  │ Chất lượng│  Thiếu VL  │  ║
+// ║         │(9pt Bold)  │           │            │             │  ║
+// ║  ┌──────┼────────────┼────────────┼────────────┼─────────────┤  ║
+// ║  │010   │ [🟢 ✓    ] │[🟡05m30s ] │ [🟢 ✓    ] │ [🟢 ✓    ] │  ║
+// ║  │Line1 │ Button     │ Button     │ Button     │ Button     │  ║
+// ║  │(10pt)│ 120×80px  │            │            │            │  ║
+// ║  ├──────┼────────────┼────────────┼────────────┼─────────────┤  ║
+// ║  │020   │ [🔴09m   ] │ [🟢 ✓    ] │ [🟠Đang S] │ [🟢 ✓    ] │  ║
+// ║  │Line2 │            │            │            │            │  ║
+// ║  └──────┴────────────┴────────────┴────────────┴─────────────┘  ║
+// ╚══════════════════════════════════════════════════════════════════╝
+//
+// CẤU TRÚC DỮ LIỆU:
+//   _cells: Dictionary<string, GridCell>
+//   Key = "lineNumber_alarmIndex" ví dụ: "010_1", "020_3"
+//   Mỗi GridCell: { Button, Status, Ticket, AlarmTypeIndex, LineNumber... }
+//
+// TIMER (_refreshTimer, 5000ms):
+//   → RefreshGridAndWriteData() → cập nhật màu + đếm giờ + ghi file terminalXX.txt
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Kích thước ô: sửa cellWidth/cellHeight trong InitializeUI()
+//   - Màu ô: sửa ColorGreen/Yellow/Red/Orange/Blue (const ở đầu class)
+//   - Thêm thông tin header: xem hướng dẫn Docs/UI_CUSTOMIZE.md#2
 
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Windows.Forms;
 using SharedLib.Models;
@@ -33,6 +71,10 @@ namespace AndonTerminal.Forms
         private List<WorkstationEntry> _workstations;
         private string _terminalName;   // Tên terminal, ví dụ: "terminal01"
         private string _dataDirectory;  // Thư mục ghi file Data/
+        private string _assetsDirectory; // Thư mục chứa assets (âm thanh, cấu hình)
+
+        // ─────────────── Tài nguyên cần dispose ───────────────
+        private readonly List<IDisposable> _ownedResources = new List<IDisposable>();
 
         // ─────────────── Grid UI ───────────────
         // Mỗi ô trong grid lưu: Button control + trạng thái hiện tại
@@ -54,18 +96,20 @@ namespace AndonTerminal.Forms
         private System.Windows.Forms.Timer _updateTimer;
 
         // ─────────────── Màu 5 trạng thái ───────────────
-        private static readonly Color ColorGreen = Color.FromArgb(46, 204, 113);
-        private static readonly Color ColorYellow = Color.FromArgb(241, 196, 15);
-        private static readonly Color ColorRed = Color.FromArgb(192, 57, 43);
-        private static readonly Color ColorOrange = Color.FromArgb(230, 126, 34);
-        private static readonly Color ColorBlue = Color.FromArgb(52, 152, 219);
-        private static readonly Color ColorBackground = Color.FromArgb(44, 62, 80);
-        private static readonly Color ColorHeader = Color.FromArgb(36, 50, 64);
-        private static readonly Color ColorTextDark = Color.FromArgb(44, 62, 80);
+        // Thay đổi các giá trị Color.FromArgb(R, G, B) để đổi màu giao diện.
+        // Công cụ chọn màu: https://colorpicker.me/ — chọn màu → lấy R,G,B
+        private static readonly Color ColorGreen      = Color.FromArgb(46, 204, 113);   // xanh lá tươi
+        private static readonly Color ColorYellow     = Color.FromArgb(241, 196, 15);   // vàng
+        private static readonly Color ColorRed        = Color.FromArgb(192, 57, 43);    // đỏ đậm
+        private static readonly Color ColorOrange     = Color.FromArgb(230, 126, 34);   // cam (đang sửa)
+        private static readonly Color ColorBlue       = Color.FromArgb(52, 152, 219);   // xanh dương (chờ Leader)
+        private static readonly Color ColorBackground = Color.FromArgb(44, 62, 80);     // nền tối chính
+        private static readonly Color ColorHeader     = Color.FromArgb(36, 50, 64);     // nền header tối hơn
+        private static readonly Color ColorTextDark   = Color.FromArgb(44, 62, 80);     // chữ tối (trên nền vàng)
 
         public TerminalMainForm(SettingsReader settings, LineStationReader lineStationReader,
                                  IncidentService incidentService, AlarmLogger alarmLogger,
-                                 string terminalName, string dataDirectory)
+                                 string terminalName, string dataDirectory, string assetsDirectory = null)
         {
             _settings = settings;
             _lineStationReader = lineStationReader;
@@ -73,11 +117,30 @@ namespace AndonTerminal.Forms
             _alarmLogger = alarmLogger;
             _terminalName = terminalName;
             _dataDirectory = dataDirectory;
+            _assetsDirectory = assetsDirectory;
 
             if (!Directory.Exists(_dataDirectory))
                 Directory.CreateDirectory(_dataDirectory);
 
-            _workstations = _lineStationReader.GetWorkstations();
+            // ── Icon cửa sổ ──
+            // Nguồn: Assets/app.ico — lấy từ https://github.com/vitplanocka/eAndon (MIT License)
+            // Xem attribution chi tiết tại Assets/NOTICE.txt
+            string iconPath = _assetsDirectory != null
+                ? Path.Combine(_assetsDirectory, "app.ico")
+                : null;
+            if (iconPath != null && File.Exists(iconPath))
+            {
+                var appIcon = new Icon(iconPath);
+                _ownedResources.Add(appIcon);
+                this.Icon = appIcon;
+            }
+
+            // BUG FIX: phải lọc theo _terminalName để mỗi Terminal chỉ hiển thị
+            // các Lines được phân công cho nó trong Workstations_terminals.txt.
+            // Nếu KHÔNG lọc → terminal01 sẽ hiển thị tất cả 6 Lines thay vì chỉ Lines 1-2.
+            _workstations = _lineStationReader.GetWorkstations()
+                .Where(w => string.Equals(w.Terminal, _terminalName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             InitializeUI();
             LoadGridState();
@@ -86,32 +149,36 @@ namespace AndonTerminal.Forms
 
         private void InitializeUI()
         {
-            int alarmCount = _settings.NumberOfAlarmTypes;
-            int rowCount = _workstations.Count;
+            // Đọc số cột (= số loại alarm) và số hàng (= số line) từ cấu hình
+            int alarmCount = _settings.NumberOfAlarmTypes;  // settings.txt: "Number of alarm types to display"
+            int rowCount = _workstations.Count;             // số dòng trong Workstations_terminals.txt
 
-            // Kích thước mỗi ô
-            int cellWidth = 120;
-            int cellHeight = 80;
-            int headerH = 50;
-            int rowHeaderW = 150;
-            int padding = 5;
+            // ── Kích thước mỗi ô trong grid ──
+            // Thay đổi các giá trị dưới đây để điều chỉnh kích thước grid
+            int cellWidth  = 120;  // chiều rộng ô (px) — tăng nếu cần hiển thị text dài hơn
+            int cellHeight = 80;   // chiều cao ô (px) — tăng nếu cần hiển thị 2 dòng text
+            int headerH    = 50;   // chiều cao hàng tiêu đề cột (tên Alarm)
+            int rowHeaderW = 150;  // chiều rộng cột tiêu đề hàng (tên Line) — tăng nếu tên dài
+            int padding    = 5;    // khoảng cách giữa các ô (px)
 
-            int formWidth = rowHeaderW + alarmCount * (cellWidth + padding) + padding * 2 + 20;
+            // Tự động tính kích thước form theo số hàng/cột
+            int formWidth  = rowHeaderW + alarmCount * (cellWidth + padding) + padding * 2 + 20;
             int formHeight = headerH + rowCount * (cellHeight + padding) + padding * 2 + 80;
 
             this.Text = $"eAndon Terminal — {_terminalName}";
-            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.FormBorderStyle = FormBorderStyle.Sizable;    // cho phép kéo to nhỏ
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = ColorBackground;
-            this.Size = new Size(Math.Max(800, formWidth), Math.Max(500, formHeight));
+            this.Size = new Size(Math.Max(800, formWidth), Math.Max(500, formHeight));  // tối thiểu 800×500
             this.MinimumSize = new Size(600, 400);
 
-            // ── Panel tiêu đề ──
+            // ── Panel tiêu đề (dải ngang trên cùng) ──
+            // DockStyle.Top = tự dãn hết chiều ngang, bám vào cạnh trên
             var panelHeader = new Panel
             {
-                BackColor = ColorHeader,
-                Bounds = new Rectangle(0, 0, this.Width, 60),
-                Dock = DockStyle.Top
+                BackColor = ColorHeader,                       // màu tối hơn nền chính
+                Bounds = new Rectangle(0, 0, this.Width, 60), // không dùng vì đã Dock
+                Dock = DockStyle.Top                           // dán vào cạnh trên form
             };
 
             var lblTitle = new Label
@@ -125,59 +192,102 @@ namespace AndonTerminal.Forms
             };
             panelHeader.Controls.Add(lblTitle);
 
-            // Nút thống kê (mở DashBoard từ Terminal - tùy chọn)
+            // Đồng hồ số ở góc phải header
+            // Name = "lblTime" để tìm lại trong RefreshGridAndWriteData()
+            // Anchor = Top|Right → khi resize form, label luôn ở góc trên phải
             var lblTime = new Label
             {
                 Name = "lblTime",
                 Text = DateTime.Now.ToString("HH:mm:ss  dd/MM/yyyy"),
-                ForeColor = Color.FromArgb(189, 195, 199),
+                ForeColor = Color.FromArgb(189, 195, 199),  // xám nhạt
                 Font = new Font("Segoe UI", 11f),
                 AutoSize = false,
                 Bounds = new Rectangle(this.Width - 280, 15, 260, 30),
                 TextAlign = ContentAlignment.MiddleRight,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Anchor = AnchorStyles.Top | AnchorStyles.Right  // quan trọng: bám góc phải
             };
             panelHeader.Controls.Add(lblTime);
-            this.Controls.Add(panelHeader);
+            this.Controls.Add(panelHeader);  // thêm panelHeader vào form
 
             // ── Panel Grid có thể scroll ──
+            // DockStyle.Fill = chiếm toàn bộ vùng còn lại sau header
+            // AutoScroll = true → tự hiện thanh cuộn khi grid vượt kích thước cửa sổ
             var panelGrid = new Panel
             {
                 AutoScroll = true,
                 BackColor = ColorBackground,
-                Bounds = new Rectangle(0, 60, this.Width, this.Height - 60),
-                Dock = DockStyle.Fill
+                Bounds = new Rectangle(0, 60, this.Width, this.Height - 60), // không dùng vì đã Dock
+                Dock = DockStyle.Fill  // chiếm phần còn lại
             };
             this.Controls.Add(panelGrid);
 
-            int startX = 10, startY = 10;
+            int startX = 10, startY = 10;  // điểm bắt đầu vẽ grid (offset từ góc trái trên của panelGrid)
 
-            // ── Header cột (Alarm Types) ──
+            // ── Header cột: tên các loại Alarm (có icon ảnh nếu file tồn tại) ──
+            // Vòng lặp từ 1 đến alarmCount (1-based theo settings.txt)
             for (int i = 1; i <= alarmCount; i++)
             {
-                string label = _settings.GetAlarmLabel(i);
+                string label = _settings.GetAlarmLabel(i);  // đọc từ "Alarm label 1", "Alarm label 2"...
+                // xPos tính từ: startX + cột header bên trái + (chỉ số cột - 1) * (rộng ô + padding)
                 int xPos = startX + rowHeaderW + (i - 1) * (cellWidth + padding);
 
-                var lblCol = new Label
+                // ── Icon alarm column header ──
+                // Nguồn: Assets/Icon1-5.png — lấy từ https://github.com/vitplanocka/eAndon (MIT License)
+                // Xem attribution chi tiết tại Assets/NOTICE.txt
+                string imgFile = _assetsDirectory != null
+                    ? Path.Combine(_assetsDirectory, _settings.GetAlarmImageFile(i))
+                    : null;
+                if (imgFile != null && File.Exists(imgFile))
                 {
-                    Text = label,
-                    ForeColor = Color.White,
-                    Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                    BackColor = ColorHeader,
-                    AutoSize = false,
-                    Bounds = new Rectangle(xPos, startY, cellWidth, headerH - 10),
-                    TextAlign = ContentAlignment.MiddleCenter,
-                };
-                panelGrid.Controls.Add(lblCol);
+                    // Hiển thị ảnh icon phía trên + text label phía dưới
+                    var img = Image.FromFile(imgFile);
+                    _ownedResources.Add(img);  // đảm bảo được dispose khi form đóng
+                    var pb = new PictureBox
+                    {
+                        Image = img,
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        BackColor = ColorHeader,
+                        Bounds = new Rectangle(xPos + (cellWidth - 32) / 2, startY, 32, 32),
+                    };
+                    panelGrid.Controls.Add(pb);
+                    var lblCol = new Label
+                    {
+                        Text = label,
+                        ForeColor = Color.White,
+                        Font = new Font("Segoe UI", 8f, FontStyle.Bold),
+                        BackColor = ColorHeader,
+                        AutoSize = false,
+                        Bounds = new Rectangle(xPos, startY + 32, cellWidth, headerH - 32 - 2),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                    };
+                    panelGrid.Controls.Add(lblCol);
+                }
+                else
+                {
+                    // Fallback: chỉ hiển thị text khi không có file ảnh
+                    var lblCol = new Label
+                    {
+                        Text = label,
+                        ForeColor = Color.White,
+                        Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                        BackColor = ColorHeader,
+                        AutoSize = false,
+                        Bounds = new Rectangle(xPos, startY, cellWidth, headerH - 10),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                    };
+                    panelGrid.Controls.Add(lblCol);
+                }
             }
 
-            // ── Các hàng (Lines) ──
+            // ── Các hàng: một hàng = một Line sản xuất ──
             for (int row = 0; row < _workstations.Count; row++)
             {
                 var ws = _workstations[row];
+                // yPos: bắt đầu từ header + (hàng hiện tại * (cao ô + padding))
                 int yPos = startY + headerH + row * (cellHeight + padding);
 
-                // Label tên Line (bên trái)
+                // Label tên Line ở cột đầu tiên (bên trái)
+                // Hiển thị: "010\nLine 1" (số mã và tên)
                 var lblLine = new Label
                 {
                     Text = $"{ws.Number}\n{ws.Name}",
@@ -187,26 +297,30 @@ namespace AndonTerminal.Forms
                     AutoSize = false,
                     Bounds = new Rectangle(startX, yPos, rowHeaderW - 5, cellHeight),
                     TextAlign = ContentAlignment.MiddleCenter,
-                    Cursor = Cursors.Hand,
+                    Cursor = Cursors.Hand,  // con trỏ tay khi hover → gợi ý có thể click
                 };
 
-                // Click vào tên Line → xem lịch sử alarm
+                // Click vào tên Line → mở lịch sử alarm của line đó
+                // Dùng biến captured để tránh "closure bug" trong vòng lặp
                 string capturedLine = ws.Number;
                 string capturedLineName = ws.Name;
                 lblLine.Click += (s, e) => ShowLineHistory(capturedLine, capturedLineName);
                 panelGrid.Controls.Add(lblLine);
 
-                // Các ô alarm cho từng cột
+                // ── Tạo các ô alarm (Button) cho từng cột trong hàng này ──
                 for (int col = 1; col <= alarmCount; col++)
                 {
+                    // xPos: bắt đầu từ cột header bên trái + (chỉ số cột - 1) * (rộng + padding)
                     int xPos = startX + rowHeaderW + (col - 1) * (cellWidth + padding);
+                    // Key duy nhất để tra cứu cell: "010_1", "010_2", "020_1"...
                     string cellKey = $"{ws.Number}_{col}";
                     int capturedCol = col;
 
+                    // Mỗi ô là 1 Button với FlatStyle để trông như ô màu phẳng
                     var btn = new Button
                     {
                         Name = $"cell_{ws.Number}_{col}",
-                        Text = "✓",
+                        Text = "✓",                    // ký hiệu mặc định khi trạng thái Green
                         ForeColor = ColorTextDark,
                         BackColor = ColorGreen,
                         FlatStyle = FlatStyle.Flat,
@@ -308,6 +422,19 @@ namespace AndonTerminal.Forms
                 cell.AlarmStartTime = DateTime.Now;
                 cell.ActiveTicketId = ticket.TicketId;
                 UpdateCellUI(cell);
+
+                // ══════════════════════════════════════════════════════════════
+                // ► [TODO] HOOK SAU KHI TẠO TICKET — Viết thêm logic tại đây
+                // Ví dụ: hiển thị gợi ý KTV từ AnalyticsManager,
+                //        gửi thông báo ra ngoài, gọi API, v.v.
+                //
+                // var analytics = new Analytics.AnalyticsManager("Data/eandon.db");
+                // var gợiÝ = analytics.GetSuggestionForNewTicket(
+                //                 cell.LineNumber, cell.AlarmTypeIndex);
+                // if (gợiÝ.HasSuggestion)
+                //     MessageBox.Show(gợiÝ.SummaryText, "💡 Gợi ý",
+                //         MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // ══════════════════════════════════════════════════════════════
 
                 // Phát âm thanh cảnh báo
                 PlayAlarmSound();
@@ -536,7 +663,12 @@ namespace AndonTerminal.Forms
         {
             try
             {
-                string soundFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", _settings.AlarmSoundFile);
+                // ── Âm thanh alarm ──
+                // Nguồn: Assets/alarm.wav — lấy từ https://github.com/vitplanocka/eAndon (MIT License)
+                // Xem attribution chi tiết tại Assets/NOTICE.txt
+                // Nếu file không tồn tại → dùng âm thanh hệ thống thay thế (không crash)
+                string assetBase = _assetsDirectory ?? AppDomain.CurrentDomain.BaseDirectory;
+                string soundFile = Path.Combine(assetBase, _settings.AlarmSoundFile);
                 if (File.Exists(soundFile))
                 {
                     var player = new SoundPlayer(soundFile);
@@ -571,5 +703,28 @@ namespace AndonTerminal.Forms
                 }
             }
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (var res in _ownedResources)
+                    res?.Dispose();
+                _ownedResources.Clear();
+            }
+            base.Dispose(disposing);
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ► [TODO] MỞ RỘNG TERMINAL — Thêm methods tùy chỉnh của bạn tại đây
+        // ──────────────────────────────────────────────────────────────────────
+        // Ví dụ các chức năng có thể mở rộng:
+        //   - Gửi SMS / email khi alarm phát sinh
+        //   - Kết nối API ngoài (ERP, MES) để đồng bộ ticket
+        //   - Tùy chỉnh logic màu sắc / âm thanh
+        //   - Thêm bước xác nhận trung gian (bước 4.5)
+        //   - Xuất báo cáo ca làm việc
+        // ══════════════════════════════════════════════════════════════════════
+
     }
 }

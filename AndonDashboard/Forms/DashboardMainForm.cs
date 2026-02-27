@@ -4,6 +4,40 @@
 // Dùng FileSystemWatcher để đọc file Data/terminalXX.txt khi có thay đổi.
 // Click vào ô → xem TicketDetailForm.
 // Có nút thống kê để mở StatisticsForm.
+//
+// GIAO DIỆN THỰC TẾ (kích thước tự động theo số Line × Alarm):
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  panelTop (DockStyle.Top, Height=65)                            ║
+// ║  ┌───────────────────────┐  ┌──────────────┐  ┌─────────────┐  ║
+// ║  │ 🏭 eAndon Dashboard   │  │  08:30:15    │  │ 📊 Thống kê│  ║
+// ║  │ (16pt Bold, trắng)    │  │  27/02/2026  │  │  (nút xanh)│  ║
+// ║  └───────────────────────┘  └──────────────┘  └─────────────┘  ║
+// ╠══════════════════════════════════════════════════════════════════╣
+// ║  panelLegend (DockStyle.Top, Height=35) — chú giải màu         ║
+// ║  🟢 Green  🟡 Yellow  🔴 Red  🟠 Repairing  🔵 WaitLeader      ║
+// ╠══════════════════════════════════════════════════════════════════╣
+// ║  _panelGrid (DockStyle.Fill, AutoScroll=true)                   ║
+// ║         ┌────────────┬────────────┬────────────┐               ║
+// ║         │ Hỗ trợ TL  │  Bảo trì  │ Chất lượng │               ║
+// ║  ┌──────┼────────────┼────────────┼────────────┤               ║
+// ║  │010 L1│[🟢 ✓     ] │[🟡05m30s ] │[🟢 ✓     ] │               ║
+// ║  ├──────┼────────────┼────────────┼────────────┤               ║
+// ║  │020 L2│[🔴09m   ] │[🟢 ✓     ] │[🟠 Sửa   ] │               ║
+// ║  └──────┴────────────┴────────────┴────────────┘               ║
+// ╠══════════════════════════════════════════════════════════════════╣
+// ║  _lblStatus (DockStyle.Bottom, Height=22)                       ║
+// ║  "  Cập nhật từ file lúc 08:30:20"                              ║
+// ╚══════════════════════════════════════════════════════════════════╝
+//
+// KHÁC BIỆT VỚI TERMINAL:
+//   - Ô dùng Label (chỉ xem) thay vì Button (tương tác nhập liệu)
+//   - Cập nhật bằng FileSystemWatcher đọc file Data/terminalXX.txt
+//   - Click ô → mở TicketDetailForm (xem chi tiết, không sửa)
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Kích thước ô: sửa cellW/cellH trong InitializeUI()
+//   - Màu ô: sửa ColorGreen/Yellow/Red/Orange/Blue (const ở đầu class)
+//   - Thêm panel tóm tắt: xem hướng dẫn Docs/UI_CUSTOMIZE.md#3
 
 using System;
 using System.Collections.Generic;
@@ -27,6 +61,8 @@ namespace AndonDashboard.Forms
         private readonly IncidentService _incidentService;
         private readonly DailyStatsService _statsService;
         private readonly string _dataDirectory;
+        private readonly string _assetsDirectory; // Thư mục chứa assets (icon, logo)
+        private Icon _appIcon; // Icon cửa sổ — cần dispose khi form đóng
 
         // ─────────────── FileSystemWatcher ───────────────
         // Theo dõi thư mục Data/ để cập nhật khi Terminal ghi file
@@ -51,13 +87,15 @@ namespace AndonDashboard.Forms
         private List<WorkstationEntry> _workstations;
 
         // ─────────────── Màu 5 trạng thái ───────────────
-        private static readonly Color ColorGreen = Color.FromArgb(46, 204, 113);
-        private static readonly Color ColorYellow = Color.FromArgb(241, 196, 15);
-        private static readonly Color ColorRed = Color.FromArgb(192, 57, 43);
-        private static readonly Color ColorOrange = Color.FromArgb(230, 126, 34);
-        private static readonly Color ColorBlue = Color.FromArgb(52, 152, 219);
+        // Đồng bộ với TerminalMainForm để 2 ứng dụng hiển thị nhất quán.
+        // Sửa tại đây nếu muốn Dashboard có bảng màu khác Terminal.
+        private static readonly Color ColorGreen      = Color.FromArgb(46, 204, 113);
+        private static readonly Color ColorYellow     = Color.FromArgb(241, 196, 15);
+        private static readonly Color ColorRed        = Color.FromArgb(192, 57, 43);
+        private static readonly Color ColorOrange     = Color.FromArgb(230, 126, 34);
+        private static readonly Color ColorBlue       = Color.FromArgb(52, 152, 219);
         private static readonly Color ColorBackground = Color.FromArgb(44, 62, 80);
-        private static readonly Color ColorHeader = Color.FromArgb(36, 50, 64);
+        private static readonly Color ColorHeader     = Color.FromArgb(36, 50, 64);
 
         // Panel chứa grid (để dễ dàng cập nhật)
         private Panel _panelGrid;
@@ -66,13 +104,26 @@ namespace AndonDashboard.Forms
 
         public DashboardMainForm(SettingsReader settings, LineStationReader lineStationReader,
                                   IncidentService incidentService, DailyStatsService statsService,
-                                  string dataDirectory)
+                                  string dataDirectory, string assetsDirectory = null)
         {
             _settings = settings;
             _lineStationReader = lineStationReader;
             _incidentService = incidentService;
             _statsService = statsService;
             _dataDirectory = dataDirectory;
+            _assetsDirectory = assetsDirectory;
+
+            // ── Icon cửa sổ ──
+            // Nguồn: Assets/app.ico — lấy từ https://github.com/vitplanocka/eAndon (MIT License)
+            // Xem attribution chi tiết tại Assets/NOTICE.txt
+            string iconPath = _assetsDirectory != null
+                ? Path.Combine(_assetsDirectory, "app.ico")
+                : null;
+            if (iconPath != null && File.Exists(iconPath))
+            {
+                _appIcon = new Icon(iconPath);
+                this.Icon = _appIcon;
+            }
 
             _workstations = _lineStationReader.GetWorkstations();
 
@@ -84,28 +135,32 @@ namespace AndonDashboard.Forms
 
         private void InitializeUI()
         {
-            int alarmCount = _settings.NumberOfAlarmTypes;
-            int rowCount = _workstations.Count;
+            int alarmCount = _settings.NumberOfAlarmTypes;  // số cột = số loại alarm
+            int rowCount = _workstations.Count;              // số hàng = số line
 
-            int cellW = 130, cellH = 85;
-            int headerH = 55;
-            int rowHeaderW = 160;
-            int padding = 4;
+            // ── Kích thước ô Dashboard (hơi lớn hơn Terminal để dễ đọc từ xa) ──
+            // Thay đổi để phù hợp với màn hình TV/monitor của bạn
+            int cellW     = 130;  // rộng ô (px) — Dashboard thường rộng hơn Terminal
+            int cellH     = 85;   // cao ô (px)
+            int headerH   = 55;   // cao hàng tiêu đề (tên alarm)
+            int rowHeaderW = 160; // rộng cột tên line
+            int padding   = 4;    // khoảng cách giữa các ô
 
-            int formWidth = rowHeaderW + alarmCount * (cellW + padding) + padding * 3 + 40;
+            // +120 để chừa chỗ cho 2 panel phía trên (panelTop + panelLegend)
+            int formWidth  = rowHeaderW + alarmCount * (cellW + padding) + padding * 3 + 40;
             int formHeight = 120 + headerH + rowCount * (cellH + padding) + padding * 2 + 50;
 
             this.Text = "eAndon Dashboard — Tổng quan hệ thống";
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = ColorBackground;
-            this.Size = new Size(Math.Max(900, formWidth), Math.Max(600, formHeight));
+            this.Size = new Size(Math.Max(900, formWidth), Math.Max(600, formHeight));  // tối thiểu 900×600
 
-            // ── Panel header trên cùng ──
+            // ── Panel header trên cùng (chứa tiêu đề + đồng hồ + nút thống kê) ──
             var panelTop = new Panel
             {
                 BackColor = ColorHeader,
-                Dock = DockStyle.Top,
+                Dock = DockStyle.Top,   // dán vào cạnh trên
                 Height = 65
             };
             this.Controls.Add(panelTop);
@@ -121,6 +176,8 @@ namespace AndonDashboard.Forms
             };
             panelTop.Controls.Add(lblTitle);
 
+            // Đồng hồ số ở giữa header
+            // _lblTime là field (có _ ở đầu) vì cần cập nhật trong _refreshTimer
             _lblTime = new Label
             {
                 Text = DateTime.Now.ToString("HH:mm:ss  dd/MM/yyyy"),
@@ -132,7 +189,7 @@ namespace AndonDashboard.Forms
             };
             panelTop.Controls.Add(_lblTime);
 
-            // Nút thống kê
+            // Nút "📊 Thống kê" ở góc phải — mở StatisticsForm
             var btnStats = new Button
             {
                 Text = "📊 Thống kê",
@@ -308,6 +365,19 @@ namespace AndonDashboard.Forms
                 }
             }
             _lblStatus.Text = $"  Cập nhật từ DB lúc {DateTime.Now:HH:mm:ss}";
+
+            // ══════════════════════════════════════════════════════════════════════
+            // ► [TODO] HOOK SAU KHI LOAD TRẠNG THÁI — Viết thêm logic tại đây
+            // ──────────────────────────────────────────────────────────────────────
+            // Ví dụ: hiển thị banner cảnh báo từ AnomalyDetector,
+            //        kiểm tra rủi ro thời gian hiện tại (TimePatternDetector),
+            //        load cấu hình bổ sung từ server, v.v.
+            //
+            // var analytics = new Analytics.AnalyticsManager("Data/eandon.db");
+            // var summary = analytics.GetDashboardSummary();
+            // if (summary.HasAnomalies)
+            //     ShowAnomalyBanner(summary.Anomalies[0].Description);
+            // ══════════════════════════════════════════════════════════════════════
         }
 
         // ─────────────── FileSystemWatcher ───────────────
@@ -501,5 +571,24 @@ namespace AndonDashboard.Forms
             _refreshTimer?.Stop();
             _watcher?.Dispose();
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                _appIcon?.Dispose();
+            base.Dispose(disposing);
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // ► [TODO] MỞ RỘNG DASHBOARD — Thêm methods tùy chỉnh của bạn tại đây
+        // ──────────────────────────────────────────────────────────────────────
+        // Ví dụ các chức năng có thể mở rộng:
+        //   - Hiển thị banner cảnh báo bất thường (AnomalyDetector)
+        //   - Vẽ biểu đồ xu hướng downtime (DowntimeEstimator)
+        //   - Kết nối màn hình lớn (TV/Monitor) qua Secondary Screen
+        //   - Gửi báo cáo tự động cuối ca / cuối ngày
+        //   - Tích hợp bản đồ nhà máy (factory map overlay)
+        // ══════════════════════════════════════════════════════════════════════
+
     }
 }

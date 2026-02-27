@@ -1,5 +1,67 @@
 # README_FULL.md — Tài liệu đầy đủ hệ thống eAndon C#
 
+---
+
+## ✅ TẢI VỀ CÓ CHẠY NGAY ĐƯỢC KHÔNG? — Trả lời câu hỏi "có icon, ảnh đầy đủ rồi??"
+
+### Trả lời ngắn gọn: **CÓ — tải về là chạy được ngay, ĐÃ CÓ ĐẦY ĐỦ icon/ảnh/âm thanh**
+
+| Hạng mục | Trạng thái | Chi tiết |
+|----------|-----------|---------|
+| **UI / Giao diện** | ✅ Có đầy đủ | 100% viết trong code C#, không cần file `.resx` hay `.Designer.cs` |
+| **File cấu hình** | ✅ Có đầy đủ | `Assets/settings.txt`, `Assets/Lines_stations.txt`, `Assets/Workstations_terminals.txt` |
+| **Database SQLite** | ✅ Tự tạo | File `Data/eandon.db` được tự động tạo lần đầu chạy |
+| **NuGet packages** | ✅ Tự restore | `dotnet restore` tự tải `System.Data.SQLite` |
+| **app.ico** | ✅ Có sẵn | Icon cửa sổ ứng dụng (taskbar, title bar) — lấy từ vitplanocka/eAndon (MIT) |
+| **logo.png** | ✅ Có sẵn | Logo công ty trong thư mục `Assets/` — lấy từ vitplanocka/eAndon (MIT) |
+| **Icon1-5.png** | ✅ Có sẵn | Hiển thị trong column header TerminalMainForm — lấy từ vitplanocka/eAndon (MIT) |
+| **alarm.wav** | ✅ Có sẵn | Âm thanh cảnh báo — lấy từ vitplanocka/eAndon (MIT); có fallback nếu thiếu |
+
+> 📋 Xem `Assets/NOTICE.txt` để biết chi tiết attribution (MIT License — Vit Planocka).
+
+### Cách chạy ngay sau khi tải về
+
+```bash
+# Yêu cầu: Windows 10/11 + .NET 8 SDK
+# Tải .NET 8 SDK tại: https://dotnet.microsoft.com/download/dotnet/8.0
+
+git clone https://github.com/sonic-kine06/preAndon.git
+cd preAndon
+
+# Chạy AndonTerminal (màn hình nhà máy):
+dotnet run --project AndonTerminal
+
+# Chạy AndonDashboard (màn hình giám sát):
+dotnet run --project AndonDashboard
+```
+
+> **Hoặc mở `eAndonCSharp.sln` bằng Visual Studio 2022 → nhấn F5** — là chạy ngay, không cần làm gì thêm.
+
+### Cây thư mục khi tải về (đầy đủ, chạy được ngay)
+
+```
+preAndon/                     ← repo root
+├── Assets/                   ✅ Có sẵn, đầy đủ
+│   ├── settings.txt          ✅ Cấu hình hệ thống
+│   ├── Lines_stations.txt    ✅ Danh sách Line + Trạm (6 line mẫu)
+│   ├── Workstations_terminals.txt  ✅ Ánh xạ Terminal → Line
+│   ├── app.ico               ✅ Icon ứng dụng (title bar, taskbar)
+│   ├── logo.png              ✅ Logo công ty
+│   ├── Icon1.png ... Icon5.png  ✅ Icon 5 loại alarm (column header)
+│   ├── alarm.wav             ✅ Âm thanh cảnh báo
+│   └── NOTICE.txt            ✅ Attribution cho các file MIT từ vitplanocka/eAndon
+│
+├── AndonTerminal/            ✅ Source code đầy đủ
+├── AndonDashboard/           ✅ Source code đầy đủ
+├── SharedLib/                ✅ Source code đầy đủ
+├── eAndonCSharp.sln          ✅ Solution file
+│
+├── Data/                     ⚡ Tự tạo lần đầu chạy (bị .gitignore)
+└── Logs/                     ⚡ Tự tạo lần đầu chạy (bị .gitignore)
+```
+
+---
+
 ## 1. Giới thiệu
 
 **eAndon C# WinForms** là hệ thống quản lý sự cố sản xuất (Production Incident Management) được xây dựng theo mô hình Andon truyền thống của Toyota, chuyển đổi từ VB.NET sang C# với nhiều tính năng nâng cấp.
@@ -37,8 +99,8 @@
 
 ### 2.1 Yêu cầu hệ thống
 - Windows 10/11 (64-bit)
-- .NET 6.0 Runtime (Windows Desktop Runtime)
-- Visual Studio 2022 (để phát triển)
+- **.NET 8 SDK** (Windows Desktop Runtime) — tải tại https://dotnet.microsoft.com/download/dotnet/8.0
+- Visual Studio 2022 Community (để phát triển, **miễn phí**)
 
 ### 2.2 Build từ Source
 ```bash

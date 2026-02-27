@@ -4,16 +4,20 @@
 
 ## ✅ TẢI VỀ CÓ CHẠY NGAY ĐƯỢC KHÔNG? — Trả lời câu hỏi "có icon, ảnh đầy đủ rồi??"
 
-### Trả lời ngắn gọn: **CÓ — tải về là chạy được ngay, KHÔNG cần thêm file gì**
+### Trả lời ngắn gọn: **CÓ — tải về là chạy được ngay, ĐÃ CÓ ĐẦY ĐỦ icon/ảnh/âm thanh**
 
 | Hạng mục | Trạng thái | Chi tiết |
 |----------|-----------|---------|
 | **UI / Giao diện** | ✅ Có đầy đủ | 100% viết trong code C#, không cần file `.resx` hay `.Designer.cs` |
-| **File cấu hình** | ✅ Có đầy đủ | `Assets/settings.txt`, `Assets/Lines_stations.txt`, `Assets/Workstations_terminals.txt` — có sẵn trong repo |
+| **File cấu hình** | ✅ Có đầy đủ | `Assets/settings.txt`, `Assets/Lines_stations.txt`, `Assets/Workstations_terminals.txt` |
 | **Database SQLite** | ✅ Tự tạo | File `Data/eandon.db` được tự động tạo lần đầu chạy |
 | **NuGet packages** | ✅ Tự restore | `dotnet restore` tự tải `System.Data.SQLite` |
-| **logo.png / Icon1-5.png** | ✅ KHÔNG CẦN | Được khai báo trong `settings.txt` nhưng **không có code nào dùng đến** |
-| **alarm.wav** | ✅ Không bắt buộc | Nếu thiếu → dùng âm thanh hệ thống (SystemSounds.Exclamation) thay thế |
+| **app.ico** | ✅ Có sẵn | Icon cửa sổ ứng dụng (taskbar, title bar) — lấy từ vitplanocka/eAndon (MIT) |
+| **logo.png** | ✅ Có sẵn | Logo công ty trong thư mục `Assets/` — lấy từ vitplanocka/eAndon (MIT) |
+| **Icon1-5.png** | ✅ Có sẵn | Hiển thị trong column header TerminalMainForm — lấy từ vitplanocka/eAndon (MIT) |
+| **alarm.wav** | ✅ Có sẵn | Âm thanh cảnh báo — lấy từ vitplanocka/eAndon (MIT); có fallback nếu thiếu |
+
+> 📋 Xem `Assets/NOTICE.txt` để biết chi tiết attribution (MIT License — Vit Planocka).
 
 ### Cách chạy ngay sau khi tải về
 
@@ -40,7 +44,12 @@ preAndon/                     ← repo root
 ├── Assets/                   ✅ Có sẵn, đầy đủ
 │   ├── settings.txt          ✅ Cấu hình hệ thống
 │   ├── Lines_stations.txt    ✅ Danh sách Line + Trạm (6 line mẫu)
-│   └── Workstations_terminals.txt  ✅ Ánh xạ Terminal → Line
+│   ├── Workstations_terminals.txt  ✅ Ánh xạ Terminal → Line
+│   ├── app.ico               ✅ Icon ứng dụng (title bar, taskbar)
+│   ├── logo.png              ✅ Logo công ty
+│   ├── Icon1.png ... Icon5.png  ✅ Icon 5 loại alarm (column header)
+│   ├── alarm.wav             ✅ Âm thanh cảnh báo
+│   └── NOTICE.txt            ✅ Attribution cho các file MIT từ vitplanocka/eAndon
 │
 ├── AndonTerminal/            ✅ Source code đầy đủ
 ├── AndonDashboard/           ✅ Source code đầy đủ
@@ -48,11 +57,7 @@ preAndon/                     ← repo root
 ├── eAndonCSharp.sln          ✅ Solution file
 │
 ├── Data/                     ⚡ Tự tạo lần đầu chạy (bị .gitignore)
-├── Logs/                     ⚡ Tự tạo lần đầu chạy (bị .gitignore)
-│
-├── logo.png                  ❌ Không có, KHÔNG CẦN
-├── Icon1.png ... Icon5.png   ❌ Không có, KHÔNG CẦN
-└── alarm.wav                 ❌ Không có, tùy chọn (có fallback)
+└── Logs/                     ⚡ Tự tạo lần đầu chạy (bị .gitignore)
 ```
 
 ---

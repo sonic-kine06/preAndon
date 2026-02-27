@@ -61,6 +61,8 @@ namespace AndonDashboard.Forms
         private readonly IncidentService _incidentService;
         private readonly DailyStatsService _statsService;
         private readonly string _dataDirectory;
+        private readonly string _assetsDirectory; // Thư mục chứa assets (icon, logo)
+        private Icon _appIcon; // Icon cửa sổ — cần dispose khi form đóng
 
         // ─────────────── FileSystemWatcher ───────────────
         // Theo dõi thư mục Data/ để cập nhật khi Terminal ghi file
@@ -102,13 +104,24 @@ namespace AndonDashboard.Forms
 
         public DashboardMainForm(SettingsReader settings, LineStationReader lineStationReader,
                                   IncidentService incidentService, DailyStatsService statsService,
-                                  string dataDirectory)
+                                  string dataDirectory, string assetsDirectory = null)
         {
             _settings = settings;
             _lineStationReader = lineStationReader;
             _incidentService = incidentService;
             _statsService = statsService;
             _dataDirectory = dataDirectory;
+            _assetsDirectory = assetsDirectory;
+
+            // Đặt icon cửa sổ từ Assets/app.ico (từ vitplanocka/eAndon, MIT license)
+            string iconPath = _assetsDirectory != null
+                ? Path.Combine(_assetsDirectory, "app.ico")
+                : null;
+            if (iconPath != null && File.Exists(iconPath))
+            {
+                _appIcon = new Icon(iconPath);
+                this.Icon = _appIcon;
+            }
 
             _workstations = _lineStationReader.GetWorkstations();
 
@@ -555,6 +568,13 @@ namespace AndonDashboard.Forms
             base.OnFormClosing(e);
             _refreshTimer?.Stop();
             _watcher?.Dispose();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+                _appIcon?.Dispose();
+            base.Dispose(disposing);
         }
 
         // ══════════════════════════════════════════════════════════════════════

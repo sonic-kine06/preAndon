@@ -11,8 +11,8 @@
 Tất cả 8 form (màn hình) đều có `InitializeUI()` tự tạo toàn bộ giao diện khi chạy.
 
 > 💡 **Câu hỏi liên quan:** *"có icon, ảnh đầy đủ rồi?? tải về có chạy ngay được không?"*
-> **→ CÓ, tải về chạy ngay được.** `logo.png`/`Icon1-5.png` được định nghĩa trong settings.txt nhưng không có code nào thực sự dùng đến — ứng dụng chạy hoàn toàn bình thường không cần các file này.
-> Xem chi tiết tại [`Docs/README_FULL.md`](README_FULL.md) phần đầu "Tải về có chạy ngay được không?"
+> **→ CÓ, tải về chạy ngay được.** `app.ico`, `Icon1-5.png`, `logo.png`, `alarm.wav` **đã có sẵn** trong `Assets/` — lấy từ [vitplanocka/eAndon](https://github.com/vitplanocka/eAndon) (MIT License).
+> Xem chi tiết tại [`Assets/NOTICE.txt`](../Assets/NOTICE.txt) và [`Docs/README_FULL.md`](README_FULL.md) phần đầu.
 
 ### Bản đồ: File code → Màn hình hiển thị
 

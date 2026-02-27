@@ -13,9 +13,7 @@ Orange status name : Repairing
 Blue status name : WaitLeader
 
 # ── Cấu hình UI ──
-# QUAN TRỌNG: logo.png và Icon1-5.png được khai báo ở đây nhưng hiện tại
-# KHÔNG có code nào trong ứng dụng dùng đến chúng → ứng dụng chạy bình thường
-# dù các file này không tồn tại. Đây là placeholder cho tính năng tương lai.
+# logo.png: hiển thị logo công ty (xem NOTICE.txt để biết nguồn gốc)
 Image file for company logo : logo.png
 
 # alarm.wav là tuỳ chọn — nếu file không tồn tại, ứng dụng dùng âm thanh hệ thống thay thế
@@ -34,7 +32,7 @@ Label for alarm type window - Cancel : Huy
 Require Leader Confirmation : true
 
 # ── Cấu hình 5 loại alarm (Alarm label + icon) ──
-# Lưu ý: "Alarm image file N" hiện chưa được dùng trong code → không cần có file ảnh thực sự
+# Icon1-5.png được hiển thị trong column header của TerminalMainForm (xem NOTICE.txt)
 Alarm label 1 : Ho tro Teamleader
 Alarm image file 1 : Icon1.png
 

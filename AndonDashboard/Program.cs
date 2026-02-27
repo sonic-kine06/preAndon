@@ -42,7 +42,7 @@ namespace AndonDashboard
 
             // ── Khởi chạy Dashboard ──
             Application.Run(new DashboardMainForm(
-                settings, lineStationReader, incidentService, statsService, dataDir));
+                settings, lineStationReader, incidentService, statsService, dataDir, assetsDir));
         }
     }
 }

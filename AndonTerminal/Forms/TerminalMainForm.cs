@@ -72,6 +72,9 @@ namespace AndonTerminal.Forms
         private string _dataDirectory;  // Thư mục ghi file Data/
         private string _assetsDirectory; // Thư mục chứa assets (âm thanh, cấu hình)
 
+        // ─────────────── Tài nguyên cần dispose ───────────────
+        private readonly List<IDisposable> _ownedResources = new List<IDisposable>();
+
         // ─────────────── Grid UI ───────────────
         // Mỗi ô trong grid lưu: Button control + trạng thái hiện tại
         private class GridCell
@@ -117,6 +120,17 @@ namespace AndonTerminal.Forms
 
             if (!Directory.Exists(_dataDirectory))
                 Directory.CreateDirectory(_dataDirectory);
+
+            // Đặt icon cửa sổ từ Assets/app.ico (từ vitplanocka/eAndon, MIT license)
+            string iconPath = _assetsDirectory != null
+                ? Path.Combine(_assetsDirectory, "app.ico")
+                : null;
+            if (iconPath != null && File.Exists(iconPath))
+            {
+                var appIcon = new Icon(iconPath);
+                _ownedResources.Add(appIcon);
+                this.Icon = appIcon;
+            }
 
             _workstations = _lineStationReader.GetWorkstations();
 
@@ -201,7 +215,7 @@ namespace AndonTerminal.Forms
 
             int startX = 10, startY = 10;  // điểm bắt đầu vẽ grid (offset từ góc trái trên của panelGrid)
 
-            // ── Header cột: tên các loại Alarm ──
+            // ── Header cột: tên các loại Alarm (có icon ảnh nếu file tồn tại) ──
             // Vòng lặp từ 1 đến alarmCount (1-based theo settings.txt)
             for (int i = 1; i <= alarmCount; i++)
             {
@@ -209,17 +223,50 @@ namespace AndonTerminal.Forms
                 // xPos tính từ: startX + cột header bên trái + (chỉ số cột - 1) * (rộng ô + padding)
                 int xPos = startX + rowHeaderW + (i - 1) * (cellWidth + padding);
 
-                var lblCol = new Label
+                // Thử tải icon ảnh từ Assets/Icon{i}.png (từ vitplanocka/eAndon, MIT license)
+                string imgFile = _assetsDirectory != null
+                    ? Path.Combine(_assetsDirectory, _settings.GetAlarmImageFile(i))
+                    : null;
+                if (imgFile != null && File.Exists(imgFile))
                 {
-                    Text = label,
-                    ForeColor = Color.White,
-                    Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                    BackColor = ColorHeader,
-                    AutoSize = false,
-                    Bounds = new Rectangle(xPos, startY, cellWidth, headerH - 10),
-                    TextAlign = ContentAlignment.MiddleCenter,
-                };
-                panelGrid.Controls.Add(lblCol);
+                    // Hiển thị ảnh icon phía trên + text label phía dưới
+                    var img = Image.FromFile(imgFile);
+                    _ownedResources.Add(img);  // đảm bảo được dispose khi form đóng
+                    var pb = new PictureBox
+                    {
+                        Image = img,
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        BackColor = ColorHeader,
+                        Bounds = new Rectangle(xPos + (cellWidth - 32) / 2, startY, 32, 32),
+                    };
+                    panelGrid.Controls.Add(pb);
+                    var lblCol = new Label
+                    {
+                        Text = label,
+                        ForeColor = Color.White,
+                        Font = new Font("Segoe UI", 8f, FontStyle.Bold),
+                        BackColor = ColorHeader,
+                        AutoSize = false,
+                        Bounds = new Rectangle(xPos, startY + 32, cellWidth, headerH - 32 - 2),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                    };
+                    panelGrid.Controls.Add(lblCol);
+                }
+                else
+                {
+                    // Fallback: chỉ hiển thị text khi không có file ảnh
+                    var lblCol = new Label
+                    {
+                        Text = label,
+                        ForeColor = Color.White,
+                        Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                        BackColor = ColorHeader,
+                        AutoSize = false,
+                        Bounds = new Rectangle(xPos, startY, cellWidth, headerH - 10),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                    };
+                    panelGrid.Controls.Add(lblCol);
+                }
             }
 
             // ── Các hàng: một hàng = một Line sản xuất ──
@@ -642,6 +689,17 @@ namespace AndonTerminal.Forms
                         cell.AlarmStartTime.Value);
                 }
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (var res in _ownedResources)
+                    res?.Dispose();
+                _ownedResources.Clear();
+            }
+            base.Dispose(disposing);
         }
 
         // ══════════════════════════════════════════════════════════════════════

@@ -10,6 +10,7 @@ Thư mục này chứa tài liệu chi tiết cho từng khía cạnh của hệ
 |------|---------|
 | [`README_FULL.md`](README_FULL.md) | Tài liệu đầy đủ: cài đặt, cấu hình, API, tất cả tính năng |
 | [`BEGINNER_GUIDE.md`](BEGINNER_GUIDE.md) | Hướng dẫn người mới: clone → build → chạy ngay |
+| [`CURRICULUM.md`](CURRICULUM.md) | **🎓 Giáo trình tự học: xây dựng eAndon từ A→Z (Bài 1 → 10)** |
 | [`DATABASE.md`](DATABASE.md) | Schema SQLite chi tiết, ví dụ query, backup/restore |
 | [`UI_CUSTOMIZE.md`](UI_CUSTOMIZE.md) | Tùy chỉnh giao diện: màu sắc, kích thước, bố cục |
 | [`ANALYTICS.md`](ANALYTICS.md) | Tính năng thống kê: MTTR, MTBF, Availability, AI analytics |
@@ -17,6 +18,9 @@ Thư mục này chứa tài liệu chi tiết cho từng khía cạnh của hệ
 ---
 
 ## Quick links theo nhu cầu
+
+### "Tôi muốn học tự build eAndon từ đầu"
+→ Xem [`CURRICULUM.md`](CURRICULUM.md) — Giáo trình 10 bài từ dễ đến khó
 
 ### "Tôi muốn chạy nhanh"
 → Xem [`BEGINNER_GUIDE.md`](BEGINNER_GUIDE.md)

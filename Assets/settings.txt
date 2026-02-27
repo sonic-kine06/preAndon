@@ -1,0 +1,45 @@
+# settings.txt — Cấu hình hệ thống eAndon
+# Format: "Key : Value" (có dấu cách quanh dấu hai chấm)
+# Thay đổi file này để tùy chỉnh hệ thống mà không cần biên dịch lại
+
+# ── Cấu hình số lượng loại alarm (1-10) ──
+Number of alarm types to display : 5
+
+# ── Tên các trạng thái (5 màu) ──
+Green status name : Green
+Yellow status name : Yellow
+Red status name : Red
+Orange status name : Repairing
+Blue status name : WaitLeader
+
+# ── Cấu hình UI ──
+Image file for company logo : logo.png
+Alarm sound file : alarm.wav
+
+# ── Hướng dẫn hiển thị (dùng | để xuống dòng) ──
+Instructions (use | for new line) : KHI CO SU CO, NHAN VAO O XANH|CHON TRAM BI LOI|NHAP MA NV VA TEN|CHON MUC DO VANG HOAC DO
+
+# ── Nhãn cửa sổ chọn loại alarm (AlarmTypeForm) ──
+Label for alarm type window - Title : Chon muc do su co
+Label for alarm type window - Yellow : Tram co van de nhung van chay duoc
+Label for alarm type window - Red : Tram da dung hoan toan
+Label for alarm type window - Cancel : Huy
+
+# ── Yêu cầu Leader xác nhận trước khi đóng phiếu ──
+Require Leader Confirmation : true
+
+# ── Cấu hình 5 loại alarm (Alarm label + icon) ──
+Alarm label 1 : Ho tro Teamleader
+Alarm image file 1 : Icon1.png
+
+Alarm label 2 : Ho tro Bao tri
+Alarm image file 2 : Icon2.png
+
+Alarm label 3 : Ho tro Chat luong
+Alarm image file 3 : Icon3.png
+
+Alarm label 4 : Thieu vat lieu
+Alarm image file 4 : Icon4.png
+
+Alarm label 5 : Dong goi
+Alarm image file 5 : Icon5.png

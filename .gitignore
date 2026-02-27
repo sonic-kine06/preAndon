@@ -1,0 +1,23 @@
+# Build artifacts
+bin/
+obj/
+*.user
+
+# SQLite database (generated at runtime)
+Data/
+
+# Log files (generated at runtime)
+Logs/
+
+# Visual Studio
+.vs/
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+
+# Runtime
+*.log

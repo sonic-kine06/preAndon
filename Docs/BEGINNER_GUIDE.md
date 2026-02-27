@@ -10,6 +10,10 @@
 **Có, 100% UI đã được lập trình sẵn trong code.** Không cần dùng Visual Designer.
 Tất cả 8 form (màn hình) đều có `InitializeUI()` tự tạo toàn bộ giao diện khi chạy.
 
+> 💡 **Câu hỏi liên quan:** *"có icon, ảnh đầy đủ rồi?? tải về có chạy ngay được không?"*
+> **→ CÓ, tải về chạy ngay được.** `logo.png`/`Icon1-5.png` được định nghĩa trong settings.txt nhưng không có code nào thực sự dùng đến — ứng dụng chạy hoàn toàn bình thường không cần các file này.
+> Xem chi tiết tại [`Docs/README_FULL.md`](README_FULL.md) phần đầu "Tải về có chạy ngay được không?"
+
 ### Bản đồ: File code → Màn hình hiển thị
 
 | File code | Màn hình | Hiển thị khi nào |

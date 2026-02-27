@@ -70,6 +70,7 @@ namespace AndonTerminal.Forms
         private List<WorkstationEntry> _workstations;
         private string _terminalName;   // Tên terminal, ví dụ: "terminal01"
         private string _dataDirectory;  // Thư mục ghi file Data/
+        private string _assetsDirectory; // Thư mục chứa assets (âm thanh, cấu hình)
 
         // ─────────────── Grid UI ───────────────
         // Mỗi ô trong grid lưu: Button control + trạng thái hiện tại
@@ -104,7 +105,7 @@ namespace AndonTerminal.Forms
 
         public TerminalMainForm(SettingsReader settings, LineStationReader lineStationReader,
                                  IncidentService incidentService, AlarmLogger alarmLogger,
-                                 string terminalName, string dataDirectory)
+                                 string terminalName, string dataDirectory, string assetsDirectory = null)
         {
             _settings = settings;
             _lineStationReader = lineStationReader;
@@ -112,6 +113,7 @@ namespace AndonTerminal.Forms
             _alarmLogger = alarmLogger;
             _terminalName = terminalName;
             _dataDirectory = dataDirectory;
+            _assetsDirectory = assetsDirectory;
 
             if (!Directory.Exists(_dataDirectory))
                 Directory.CreateDirectory(_dataDirectory);
@@ -604,7 +606,9 @@ namespace AndonTerminal.Forms
         {
             try
             {
-                string soundFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", _settings.AlarmSoundFile);
+                // _assetsDirectory được truyền từ Program.cs (4 cấp lên từ bin/Debug/net8.0-windows/)
+                string assetBase = _assetsDirectory ?? AppDomain.CurrentDomain.BaseDirectory;
+                string soundFile = Path.Combine(assetBase, _settings.AlarmSoundFile);
                 if (File.Exists(soundFile))
                 {
                     var player = new SoundPlayer(soundFile);

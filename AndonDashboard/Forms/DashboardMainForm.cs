@@ -4,6 +4,40 @@
 // Dùng FileSystemWatcher để đọc file Data/terminalXX.txt khi có thay đổi.
 // Click vào ô → xem TicketDetailForm.
 // Có nút thống kê để mở StatisticsForm.
+//
+// GIAO DIỆN THỰC TẾ (kích thước tự động theo số Line × Alarm):
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  panelTop (DockStyle.Top, Height=65)                            ║
+// ║  ┌───────────────────────┐  ┌──────────────┐  ┌─────────────┐  ║
+// ║  │ 🏭 eAndon Dashboard   │  │  08:30:15    │  │ 📊 Thống kê│  ║
+// ║  │ (16pt Bold, trắng)    │  │  27/02/2026  │  │  (nút xanh)│  ║
+// ║  └───────────────────────┘  └──────────────┘  └─────────────┘  ║
+// ╠══════════════════════════════════════════════════════════════════╣
+// ║  panelLegend (DockStyle.Top, Height=35) — chú giải màu         ║
+// ║  🟢 Green  🟡 Yellow  🔴 Red  🟠 Repairing  🔵 WaitLeader      ║
+// ╠══════════════════════════════════════════════════════════════════╣
+// ║  _panelGrid (DockStyle.Fill, AutoScroll=true)                   ║
+// ║         ┌────────────┬────────────┬────────────┐               ║
+// ║         │ Hỗ trợ TL  │  Bảo trì  │ Chất lượng │               ║
+// ║  ┌──────┼────────────┼────────────┼────────────┤               ║
+// ║  │010 L1│[🟢 ✓     ] │[🟡05m30s ] │[🟢 ✓     ] │               ║
+// ║  ├──────┼────────────┼────────────┼────────────┤               ║
+// ║  │020 L2│[🔴09m   ] │[🟢 ✓     ] │[🟠 Sửa   ] │               ║
+// ║  └──────┴────────────┴────────────┴────────────┘               ║
+// ╠══════════════════════════════════════════════════════════════════╣
+// ║  _lblStatus (DockStyle.Bottom, Height=22)                       ║
+// ║  "  Cập nhật từ file lúc 08:30:20"                              ║
+// ╚══════════════════════════════════════════════════════════════════╝
+//
+// KHÁC BIỆT VỚI TERMINAL:
+//   - Ô dùng Label (chỉ xem) thay vì Button (tương tác nhập liệu)
+//   - Cập nhật bằng FileSystemWatcher đọc file Data/terminalXX.txt
+//   - Click ô → mở TicketDetailForm (xem chi tiết, không sửa)
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Kích thước ô: sửa cellW/cellH trong InitializeUI()
+//   - Màu ô: sửa ColorGreen/Yellow/Red/Orange/Blue (const ở đầu class)
+//   - Thêm panel tóm tắt: xem hướng dẫn Docs/UI_CUSTOMIZE.md#3
 
 using System;
 using System.Collections.Generic;

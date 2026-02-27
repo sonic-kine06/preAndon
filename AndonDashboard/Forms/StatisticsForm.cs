@@ -1,6 +1,42 @@
 // File: AndonDashboard/Forms/StatisticsForm.cs
 // Mô tả: Form hiển thị thống kê DailyStats.
 // DataGridView lọc theo ngày + line, hiển thị MTTR/MTBF/Availability.
+//
+// GIAO DIỆN THỰC TẾ (950×600, Sizable):
+// ╔═══════════════════════════════════════════════════════════════════╗
+// ║  📊 Thống kê Daily Stats — eAndon                                ║
+// ╠═══════════════════════════════════════════════════════════════════╣
+// ║  panelFilter (DockStyle.Top, Height=55)                          ║
+// ║  ┌──────────┐ ┌──────────┐  ┌────┐ ┌────┐ ┌───────┐ ┌────────┐  ║
+// ║  │Từ ngày   │ │Đến ngày  │  │Line│ │[🔍]│ │[📉Top]│ │        │  ║
+// ║  │[DatePick]│ │[DatePick]│  │[  ]│ │ Lọc│ │Downtime│ │        │  ║
+// ║  └──────────┘ └──────────┘  └────┘ └────┘ └───────┘ └────────┘  ║
+// ╠═══════════════════════════════════════════════════════════════════╣
+// ║  _grid DataGridView (DockStyle.Fill)                              ║
+// ║  ┌────────┬────────┬─────────┬────────┬─────────┬──────┬───────┐ ║
+// ║  │ Ngày   │Mã Line │Tên Line │Sự cố  │Downtime │Avail.│ MTTR  │ ║
+// ║  ├────────┼────────┼─────────┼────────┼─────────┼──────┼───────┤ ║
+// ║  │27/02   │  010   │ Line 1  │   3   │01:15:30 │97.5% │ 15.2  │ ║  ← xanh nếu ≥95%
+// ║  │26/02   │  010   │ Line 1  │   5   │02:30:00 │94.8% │ 18.0  │ ║  ← vàng nếu 90-95%
+// ║  │25/02   │  020   │ Line 2  │  12   │04:00:00 │85.1% │ 20.0  │ ║  ← đỏ nếu <90%
+// ║  └────────┴────────┴─────────┴────────┴─────────┴──────┴───────┘ ║
+// ╠═══════════════════════════════════════════════════════════════════╣
+// ║  _lblSummary (DockStyle.Bottom, Height=25)                        ║
+// ║  "  Tổng cộng: 15 bản ghi | Từ 2026-02-20 đến 2026-02-27"       ║
+// ╚═══════════════════════════════════════════════════════════════════╝
+//
+// CÁC CỘT DATAGRIDVIEW (theo thứ tự):
+//   StatsDate | LineNumber | LineName | TotalIncidents | TotalDowntime
+//   YellowCount | RedCount | AvgResponse(ph) | AvgRepair(ph) | MTTR(ph) | MTBF(ph) | Availability%
+//
+// MÀU DÒNG TỰ ĐỘNG (tô theo Availability):
+//   ≥ 95%  → màu mặc định (không tô)
+//   90-95% → nền vàng nhạt (Alpha=100)
+//   < 90%  → nền đỏ nhạt (Alpha=100)
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Thêm cột mới: gọi _grid.Columns.Add(...) trong SetupGridColumns()
+//   - Thêm xuất Excel: xem hướng dẫn Docs/UI_CUSTOMIZE.md#8
 
 using System;
 using System.Drawing;

@@ -1,8 +1,33 @@
 // File: AndonTerminal/Forms/AlarmTypeForm.cs
 // Mô tả: Popup cho Operator chọn mức độ sự cố (Yellow hoặc Red).
-// Giao diện: 2 panel lớn — Yellow bên trái, Red bên phải + nút Cancel.
 // Giống Alarm_type.vb gốc eAndon nhưng chuyển sang C#.
 // Hiển thị ở bước [3] trong luồng 7 bước.
+//
+// GIAO DIỆN THỰC TẾ (700×380):
+// ╔════════════════════════════════════════════════════╗
+// ║          Chọn mức độ sự cố                        ║
+// ╠══════════════════════╦═════════════════════════════╣
+// ║     panelYellow      ║       panelRed              ║
+// ║  BackColor=Yellow    ║   BackColor=Red             ║
+// ║                      ║                             ║
+// ║       ⚠  (48pt)      ║       🛑  (48pt)            ║
+// ║    "VÀNG" (24pt)     ║     "ĐỎ"  (24pt)           ║
+// ║  "Trạm vẫn chạy"    ║  "Trạm đã dừng"            ║
+// ║   (từ settings.txt)  ║   (từ settings.txt)         ║
+// ╠══════════════════════╩═════════════════════════════╣
+// ║              [     Hủy     ]                       ║
+// ╚════════════════════════════════════════════════════╝
+//
+// CÁC CONTROL CHÍNH:
+//   panelYellow (Panel)     Bounds=(20,20,290,260)  → click → SelectedSeverity="Yellow"
+//   panelRed    (Panel)     Bounds=(390,20,290,260) → click → SelectedSeverity="Red"
+//   btnCancel   (Button)    Bounds=(270,295,160,45) → DialogResult=Cancel
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Đổi màu panel: sửa YellowColor / RedColor ở phần const màu phía dưới
+//   - Đổi icon: sửa lblYellowIcon.Text và lblRedIcon.Text
+//   - Đổi text nút: sửa settings.txt → "Label for alarm type window - Yellow/Red/Cancel"
+//   - Thêm mức độ 3: xem hướng dẫn trong Docs/UI_CUSTOMIZE.md#4
 
 using System;
 using System.Drawing;

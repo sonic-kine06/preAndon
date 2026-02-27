@@ -5,6 +5,43 @@
 // Click ô → 7 bước luồng sự cố (Station → AlarmType → Employee → ...).
 // Timer cập nhật thời gian và ghi file Data/terminalXX.txt.
 // FileSystemWatcher không dùng ở Terminal (Terminal ghi, Dashboard đọc).
+//
+// GIAO DIỆN THỰC TẾ (kích thước tự động theo số Line × Alarm):
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  panelHeader (DockStyle.Top, Height=60, BackColor=ColorHeader)  ║
+// ║  ┌─────────────────────────────┐  ┌──────────────────────────┐  ║
+// ║  │ 🏭 eAndon Terminal |term01  │  │  08:30:15  27/02/2026    │  ║
+// ║  └─────────────────────────────┘  └──────────────────────────┘  ║
+// ║  lblTitle (14pt Bold)               lblTime (11pt, Anchor=Right) ║
+// ╠══════════════════════════════════════════════════════════════════╣
+// ║  panelGrid (DockStyle.Fill, AutoScroll=true)                    ║
+// ║                                                                  ║
+// ║  [startX,startY]                                                 ║
+// ║         ┌────────────┬────────────┬────────────┬─────────────┐  ║
+// ║         │ Hỗ trợ TL  │  Bảo trì  │ Chất lượng│  Thiếu VL  │  ║
+// ║         │(9pt Bold)  │           │            │             │  ║
+// ║  ┌──────┼────────────┼────────────┼────────────┼─────────────┤  ║
+// ║  │010   │ [🟢 ✓    ] │[🟡05m30s ] │ [🟢 ✓    ] │ [🟢 ✓    ] │  ║
+// ║  │Line1 │ Button     │ Button     │ Button     │ Button     │  ║
+// ║  │(10pt)│ 120×80px  │            │            │            │  ║
+// ║  ├──────┼────────────┼────────────┼────────────┼─────────────┤  ║
+// ║  │020   │ [🔴09m   ] │ [🟢 ✓    ] │ [🟠Đang S] │ [🟢 ✓    ] │  ║
+// ║  │Line2 │            │            │            │            │  ║
+// ║  └──────┴────────────┴────────────┴────────────┴─────────────┘  ║
+// ╚══════════════════════════════════════════════════════════════════╝
+//
+// CẤU TRÚC DỮ LIỆU:
+//   _cells: Dictionary<string, GridCell>
+//   Key = "lineNumber_alarmIndex" ví dụ: "010_1", "020_3"
+//   Mỗi GridCell: { Button, Status, Ticket, AlarmTypeIndex, LineNumber... }
+//
+// TIMER (_refreshTimer, 5000ms):
+//   → RefreshGridAndWriteData() → cập nhật màu + đếm giờ + ghi file terminalXX.txt
+//
+// ĐỂ SỬA GIAO DIỆN:
+//   - Kích thước ô: sửa cellWidth/cellHeight trong InitializeUI()
+//   - Màu ô: sửa ColorGreen/Yellow/Red/Orange/Blue (const ở đầu class)
+//   - Thêm thông tin header: xem hướng dẫn Docs/UI_CUSTOMIZE.md#2
 
 using System;
 using System.Collections.Generic;

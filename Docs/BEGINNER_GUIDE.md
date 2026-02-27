@@ -5,6 +5,196 @@
 
 ---
 
+## ✅ UI ĐÃ CÓ SẴN — Trả lời câu hỏi "trong file code đã có sẵn UI chưa?"
+
+**Có, 100% UI đã được lập trình sẵn trong code.** Không cần dùng Visual Designer.
+Tất cả 8 form (màn hình) đều có `InitializeUI()` tự tạo toàn bộ giao diện khi chạy.
+
+### Bản đồ: File code → Màn hình hiển thị
+
+| File code | Màn hình | Hiển thị khi nào |
+|-----------|----------|------------------|
+| `AndonTerminal/Forms/TerminalMainForm.cs` | Grid màu chính (Terminal) | Khởi động AndonTerminal |
+| `AndonTerminal/Forms/StationSelectForm.cs` | Popup chọn trạm | Bấm ô xanh ở line có nhiều trạm |
+| `AndonTerminal/Forms/AlarmTypeForm.cs` | Popup chọn Vàng/Đỏ | Bước 3: chọn mức độ |
+| `AndonTerminal/Forms/EmployeeInputForm.cs` | Popup nhập Mã NV | Bước 4, 5, 7: nhập thông tin NV |
+| `AndonTerminal/Forms/FixCompleteForm.cs` | Popup nhập ghi chú sửa | Bước 6: KTV sửa xong |
+| `AndonDashboard/Forms/DashboardMainForm.cs` | Grid tổng quan (Dashboard) | Khởi động AndonDashboard |
+| `AndonDashboard/Forms/StatisticsForm.cs` | Bảng thống kê MTTR/MTBF | Bấm nút "📊 Thống kê" |
+| `AndonDashboard/Forms/TicketDetailForm.cs` | Chi tiết 1 phiếu sự cố | Double-click ô trên Dashboard |
+
+### Giao diện thực tế của từng màn hình
+
+**1. TerminalMainForm — Grid chính trên màn hình nhà máy:**
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  🏭 eAndon Terminal  |  terminal01               08:30:15 27/02 ║
+╠══════════════════════════════════════════════════════════════════╣
+║          │ Hỗ trợ TL │ Bảo trì   │ Chất lượng│ Thiếu VL  │ ĐG  ║
+╠══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═════╣
+║ 010      │  [🟢  ✓ ] │[🟡05m30s] │ [🟢  ✓ ] │ [🟢  ✓ ] │[🟢] ║
+║ Line 1   │           │           │           │           │     ║
+╠══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═════╣
+║ 020      │  [🔴09m] │ [🟢  ✓ ] │ [🟠Sửa  ] │ [🟢  ✓ ] │[🟢] ║
+║ Line 2   │           │           │           │           │     ║
+╠══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═════╣
+║ 030      │  [🟢  ✓ ] │ [🟢  ✓ ] │ [🔵Chờ  ] │ [🟢  ✓ ] │[🟢] ║
+║ Line 3   │           │           │           │           │     ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+**2. AlarmTypeForm — Popup chọn mức độ:**
+```
+╔════════════════════════════════════════════════════╗
+║                Chọn mức độ sự cố                   ║
+╠══════════════════════╦═════════════════════════════╣
+║     🟡  VÀNG         ║     🔴  ĐỎ                 ║
+║                      ║                             ║
+║       ⚠              ║        🛑                   ║
+║                      ║                             ║
+║  Trạm có vấn đề      ║  Trạm đã dừng               ║
+║  nhưng vẫn chạy      ║  hoàn toàn                  ║
+╠══════════════════════╩═════════════════════════════╣
+║                   [  Hủy  ]                        ║
+╚════════════════════════════════════════════════════╝
+```
+
+**3. EmployeeInputForm — Popup nhập Mã NV:**
+```
+╔═══════════════════════════════════════════╗
+║   Nhập thông tin Operator                 ║
+║─────────────────────────────────────────  ║
+║  Vui lòng nhập thông tin để báo lỗi       ║
+║                                           ║
+║  Mã nhân viên *                           ║
+║  [NV001_____________________________]     ║
+║                                           ║
+║  Họ và tên *                              ║
+║  [Nguyễn Văn A_____________________]     ║
+║                                           ║
+║  [  ✓ Xác nhận  ]  [  ✕ Hủy  ]          ║
+╚═══════════════════════════════════════════╝
+```
+
+**4. StationSelectForm — Popup chọn trạm:**
+```
+╔══════════════════════════════════════╗
+║   Line: Line 1                       ║
+║   Chọn trạm bị lỗi:                  ║
+║  ┌──────────────────────────────┐   ║
+║  │  ST-010-01 - Trạm cắt laser  │   ║
+║  └──────────────────────────────┘   ║
+║  ┌──────────────────────────────┐   ║
+║  │  ST-010-02 - Trạm hàn điểm  │   ║
+║  └──────────────────────────────┘   ║
+║  ┌──────────────────────────────┐   ║
+║  │  ST-010-03 - Trạm uốn CNC   │   ║
+║  └──────────────────────────────┘   ║
+║  [           Hủy              ]     ║
+╚══════════════════════════════════════╝
+```
+
+**5. FixCompleteForm — Popup KTV nhập ghi chú:**
+```
+╔════════════════════════════════════════════════╗
+║  ✓ Hoàn thành sửa chữa                        ║
+║  Line: Line 1  |  Trạm: ST-010-02             ║
+║─────────────────────────────────────────────── ║
+║  Ghi chú sửa chữa (không bắt buộc):           ║
+║  ┌────────────────────────────────────────┐   ║
+║  │ Thay thế motor drive, kiểm tra         │   ║
+║  │ encoder, vận hành ổn định...           │   ║
+║  │                                        │   ║
+║  └────────────────────────────────────────┘   ║
+║  [  ✓ Đã sửa xong — Chờ Leader xác nhận  ]   ║
+║  [Hủy]                                        ║
+╚════════════════════════════════════════════════╝
+```
+
+**6. DashboardMainForm — Giám sát toàn nhà máy:**
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  🏭 eAndon Dashboard         08:30:15  27/02   [ 📊 Thống kê ]  ║
+╠══════════════════════════════════════════════════════════════════╣
+║  🟢 Green  🟡 Yellow  🔴 Red  🟠 Repairing  🔵 WaitLeader       ║
+╠══════════╤═══════════╤═══════════╤═══════════╤═══════════╤═════╣
+║          │ Hỗ trợ TL │ Bảo trì   │ Chất lượng│ Thiếu VL  │ ĐG  ║
+╠══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═════╣
+║ 010 L1   │  [🟢  ✓ ] │[🟡05m30s] │ [🟢  ✓ ] │ [🟢  ✓ ] │[🟢] ║
+╠══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═════╣
+║ 020 L2   │  [🔴09m] │ [🟢  ✓ ] │ [🟠Sửa  ] │ [🟢  ✓ ] │[🟢] ║
+╠══════════╪═══════════╪═══════════╪═══════════╪═══════════╪═════╣
+║  Cập nhật từ file lúc 08:30:20                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+**7. StatisticsForm — Thống kê MTTR/MTBF:**
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║  📊 Thống kê Daily Stats — eAndon                                ║
+╠═══════════════════════════════════════════════════════════════════╣
+║ Từ ngày [20/02] Đến ngày [27/02] Line [010] [🔍Lọc] [📉TopDown] ║
+╠════════╤════════╤═════════╤════════╤═════════╤══════╤═══════════╣
+║ Ngày   │Mã Line │Tên Line │Sự cố  │Downtime │Avail.│ MTTR(ph)  ║
+╠════════╪════════╪═════════╪════════╪═════════╪══════╪═══════════╣
+║27/02   │  010   │ Line 1  │   3   │ 01:15:30│97.5% │   15.2    ║
+║26/02   │  010   │ Line 1  │   5   │ 02:30:00│94.8% │   18.0    ║
+╠════════╧════════╧═════════╧════════╧═════════╧══════╧═══════════╣
+║  Tổng cộng: 10 bản ghi | Từ 2026-02-20 đến 2026-02-27          ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+
+**8. TicketDetailForm — Chi tiết 1 phiếu:**
+```
+╔══════════════════════════════════════════╗
+║  Chi tiết Phiếu — TKT-20260227-001      ║
+╠══════════════════════════════════════════╣
+║  🎫 TKT-20260227-001           [xanh]   ║
+║  Trạng thái: Closed                     ║
+║─────────────────────────────────────────║
+║  📍 Địa điểm                            ║
+║    Line:      010 — Line 1              ║
+║    Trạm:      ST-010-01                 ║
+║    Loại:      [2] Hỗ trợ Bảo trì       ║
+║    Mức độ:    Yellow                    ║
+║─────────────────────────────────────────║
+║  👷 Bước 1-4: Operator báo lỗi          ║
+║    Thời gian: 27/02/2026 08:30:00       ║
+║    Mã NV:     NV001                     ║
+║    Họ tên:    Nguyễn Văn A              ║
+║─────────────────────────────────────────║
+║  🔧 Bước 5: KTV nhận sửa               ║
+║  ✅ Bước 6: KTV hoàn thành             ║
+║  👔 Bước 7: Leader xác nhận            ║
+║  📊 Tổng downtime: 45 phút 30 giây     ║
+╠══════════════════════════════════════════╣
+║  [Đóng]                                 ║
+╚══════════════════════════════════════════╝
+```
+
+### Cách UI được xây dựng — Code-only (không dùng Designer)
+
+Mỗi form có hàm `InitializeUI()` tự tạo toàn bộ control:
+
+```csharp
+// Ví dụ từ AlarmTypeForm.cs — tạo Panel màu vàng:
+var panelYellow = new Panel
+{
+    BackColor = Color.FromArgb(241, 196, 15),  // màu vàng
+    Bounds = new Rectangle(20, 20, 290, 260)   // x=20, y=20, rộng=290, cao=260
+};
+// Thêm icon, nhãn vào panel:
+var lblIcon = new Label { Text = "⚠", Font = new Font("Segoe UI", 48f) };
+panelYellow.Controls.Add(lblIcon);
+// Thêm panel vào form:
+this.Controls.Add(panelYellow);
+```
+
+> 💡 **Điều này có nghĩa gì?** Bạn có thể sửa toàn bộ giao diện chỉ bằng cách **chỉnh sửa code C#** —
+> đổi màu, di chuyển nút, thêm control — mà **không cần biết dùng Visual Designer**.
+
+---
+
 ## MỤC LỤC
 
 - [PHẦN 1 — Cài đặt môi trường](#phần-1--cài-đặt-môi-trường)

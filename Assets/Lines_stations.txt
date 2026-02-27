@@ -1,0 +1,20 @@
+LINE 010; Line 1
+  ST-010-01; Tram cat laser
+  ST-010-02; Tram han diem
+  ST-010-03; Tram uon CNC
+  ST-010-04; Tram phun son
+LINE 020; Line 2
+  ST-020-01; Tram lap rap A
+  ST-020-02; Tram lap rap B
+  ST-020-03; Tram kiem tra
+LINE 030; Line 3
+  ST-030-01; Tram ep nhua
+  ST-030-02; Tram CNC
+LINE 040; Line 4
+  ST-040-01; Tram dan day
+  ST-040-02; Tram kiem tra dien
+LINE 050; Line 5
+  ST-050-01; Tram hoan thien
+LINE 060; Line 6
+  ST-060-01; Tram dong goi A
+  ST-060-02; Tram dong goi B

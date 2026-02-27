@@ -47,3 +47,20 @@ Alarm image file 4 : Icon4.png
 
 Alarm label 5 : Dong goi
 Alarm image file 5 : Icon5.png
+
+# ── Cấu hình Email ──
+# Lưu ý bảo mật: Thay đổi mật khẩu mặc định trước khi triển khai thực tế.
+# Không commit file này lên version control khi đã có mật khẩu thật.
+Email SMTP Server : smtp.congty.com
+Email SMTP Port : 587
+Email Use SSL : true
+Email Sender Address : andon@congty.com
+Email Sender Password : password123
+Email Boss Recipients : giamdoc@congty.com|truongphong@congty.com
+Email Manager Recipients : quanlyktv@congty.com|truongca@congty.com
+Email Weekly Report Day : Sunday
+Email Weekly Report Hour : 20
+Email Alert No Tech Minutes : 10
+Email Alert Long Repair Minutes : 30
+Email Alert Anomaly Enabled : true
+Email Maintenance Reminder Enabled : true

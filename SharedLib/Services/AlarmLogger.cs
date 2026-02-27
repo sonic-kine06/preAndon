@@ -122,5 +122,14 @@ namespace SharedLib.Services
         //   - GetTodaySummary()        : đếm số alarm trong ngày hôm nay
         // ══════════════════════════════════════════════════════════════════════
 
+        /// <summary>
+        /// Ghi một dòng thông tin chung (không phải alarm) vào file log ngày hôm nay.
+        /// Format: "[INFO] {DateTime} | {message}"
+        /// </summary>
+        public void Log(string message)
+        {
+            string logLine = $"[INFO] {DateTime.Now:yyyy-MM-dd HH:mm:ss} | {message}";
+            WriteToFile(TodayLogFilePath, logLine);
+        }
     }
 }

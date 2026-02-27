@@ -10,6 +10,138 @@ eAndon là hệ thống cảnh báo sản xuất (Andon System) dùng để qu�
 
 ---
 
+## 🎓 Giáo trình — Bắt đầu từ đâu?
+
+> **Dành cho**: Người đã biết code (VB.NET, Python, v.v.) nhưng lần đầu làm quen **C# và Visual Studio**.  
+> Giáo trình này bám 100% vào project eAndon — không có bài toán lý thuyết ngoài luồng.
+
+### Lộ trình đọc (từ dễ đến khó)
+
+| Bước | File cần đọc | Thời gian ước tính | Mở song song để đối chiếu |
+|------|--------------|--------------------|--------------------------|
+| 1 | **README.md này** → hiểu tổng quan hệ thống | 30 phút | — |
+| 2 | **[Docs/BEGINNER_GUIDE.md](Docs/BEGINNER_GUIDE.md)** → cài VS, hiểu Solution/Project | 1–2 giờ | Mở `eAndonCSharp.sln` trong VS |
+| 3 | **[Assets/README.md](Assets/README.md)** → hiểu cấu hình text file | 30 phút | `Assets/settings.txt`, `Workstations_terminals.txt`, `Lines_stations.txt` |
+| 4 | **[SharedLib/README.md](SharedLib/README.md)** → hiểu Models + Services | 2–3 giờ | `StationInfo.cs`, `IncidentTicket.cs` → `SettingsReader.cs` → `AlarmLogger.cs` → `IncidentService.cs` |
+| 5 | **[AndonTerminal/README.md](AndonTerminal/README.md)** → hiểu WinForms UI | 2–3 giờ | `Program.cs` → `TerminalMainForm.cs` → các popup form nhỏ |
+| 6 | **[AndonDashboard/README.md](AndonDashboard/README.md)** → hiểu Dashboard | 1–2 giờ | `DashboardMainForm.cs` |
+| 7 | **[Docs/DATABASE.md](Docs/DATABASE.md)** → hiểu SQLite schema | 1 giờ | `IncidentService.cs` |
+| 8 | **[Docs/ANALYTICS.md](Docs/ANALYTICS.md)** → hiểu tính năng nâng cao | 1–2 giờ | `SharedLib/Services/Analytics/` |
+| 9 | **[SharedLib/Services/Email/README.md](SharedLib/Services/Email/README.md)** → hiểu email notification | 1 giờ | `SharedLib/Services/Email/` |
+
+### Tại sao theo thứ tự đó?
+
+- **Bước 1–2**: Nền tảng — bạn cần hiểu project là gì trước khi đọc code.
+- **Bước 3**: File cấu hình là "đầu vào" của toàn bộ hệ thống — đọc trước để hiểu dữ liệu.
+- **Bước 4**: SharedLib là "lõi" — Terminal và Dashboard đều phụ thuộc vào đây. Hiểu Models (dữ liệu) trước, rồi Services (xử lý) sau.
+- **Bước 5–6**: Hai app UI, đọc sau khi đã hiểu dữ liệu và logic bên dưới.
+- **Bước 7–9**: Chủ đề nâng cao — SQLite, AI Analytics, Email Notification.
+
+### Gợi ý khi đọc code
+
+```
+Khi đọc mỗi file .cs, hãy tự hỏi:
+  1. File này NHẬN dữ liệu gì vào? (input)
+  2. File này XỬ LÝ gì? (logic)
+  3. File này TRẢ về gì? (output)
+  4. File nào khác GỌI file này?
+```
+
+> 💡 Tham khảo thêm: **[Docs/CSHARP_VS_VBNET.md](Docs/CSHARP_VS_VBNET.md)** — Bảng so sánh C# và VB.NET dựa trên code eAndon.  
+> ❓ Gặp lỗi? → **[Docs/FAQ.md](Docs/FAQ.md)** — 20 câu hỏi thường gặp có đáp án.
+
+---
+
+## 🔗 Sơ đồ quan hệ giữa các file
+
+### Data flow tổng quát
+
+```
+settings.txt ──────────► SettingsReader
+                                │
+                                ├──► TerminalMainForm (cấu hình UI: số alarm, màu, âm thanh)
+                                │
+                                └──► EmailConfig (cấu hình SMTP, người nhận)
+
+Workstations_terminals.txt ─────► LineStationReader ──► TerminalMainForm (lọc theo terminalName)
+Lines_stations.txt ─────────────► LineStationReader ──► TerminalMainForm (danh sách Station)
+
+Operator bấm báo lỗi
+    ↓
+TerminalMainForm ──► IncidentService.OpenTicket() ──► SQLite (bảng Tickets)
+                 └──► AlarmLogger.Log()            ──► Logs/alarmlog_*.txt
+                 └──► Data/terminal01.txt          ──► DashboardMainForm (qua FileSystemWatcher)
+
+Leader xác nhận
+    ↓
+IncidentService.LeaderConfirm() ──► SQLite (UPDATE Tickets)
+DailyStatsService.UpdateForLine() ─► SQLite (UPSERT DailyStats)
+    ↓
+AnalyticsManager ──► DowntimeEstimator  (dự đoán EWMA)
+               ├──► AnomalyDetector     (Z-score bất thường)
+               ├──► TechnicianTracker   (xếp hạng KTV)
+               └──► TimePatternDetector (mẫu thời gian)
+    ↓
+EmailScheduler ──► WeeklyReportBuilder ──► EmailSender ──► SMTP ──► Hòm thư sếp
+             └──► RealtimeAlertService ──► EmailSender ──► SMTP ──► Hòm thư quản lý KTV
+```
+
+### Phân loại: Gốc → Thân → Lá
+
+```
+🌱 GỐC (Models — chỉ chứa dữ liệu, không có logic):
+   StationInfo.cs          — "1 trạm = 1 object"
+   IncidentTicket.cs       — "1 phiếu sự cố = 1 object"
+   EmailConfig.cs          — "1 bộ cấu hình email = 1 object"
+
+🌿 THÂN (Services — xử lý dữ liệu):
+   SettingsReader.cs       — đọc settings.txt → cho tất cả dùng
+   LineStationReader.cs    — đọc workstation/station config
+   AlarmLogger.cs          — ghi log file
+   IncidentService.cs      — CRUD SQLite cho Tickets
+   DailyStatsService.cs    — tính MTTR/MTBF/Availability
+   Analytics/*.cs          — phân tích lịch sử
+   Email/*.cs              — gửi email
+
+🍃 LÁ (Forms — hiển thị UI, gọi Services):
+   TerminalMainForm.cs     — gọi IncidentService, AlarmLogger, SettingsReader
+   StationSelectForm.cs    — popup, trả kết quả về TerminalMainForm
+   AlarmTypeForm.cs        — popup, trả kết quả về TerminalMainForm
+   EmployeeInputForm.cs    — popup, trả kết quả về TerminalMainForm
+   FixCompleteForm.cs      — popup, trả kết quả về TerminalMainForm
+   DashboardMainForm.cs    — gọi IncidentService, AnalyticsManager
+   TicketDetailForm.cs     — hiển thị 1 ticket
+   StatisticsForm.cs       — hiển thị DailyStats + Analytics
+```
+
+### File nào gọi file nào (phụ thuộc)
+
+```
+AndonTerminal.exe
+  └── Program.cs
+        ├── SettingsReader        (SharedLib)
+        ├── LineStationReader     (SharedLib)
+        ├── AlarmLogger           (SharedLib)
+        ├── IncidentService       (SharedLib)
+        │     └── AlarmLogger     (SharedLib)
+        └── TerminalMainForm
+              ├── StationSelectForm
+              ├── AlarmTypeForm
+              ├── EmployeeInputForm
+              └── FixCompleteForm
+
+AndonDashboard.exe
+  └── Program.cs
+        └── DashboardMainForm
+              ├── IncidentService (SharedLib)
+              ├── AnalyticsManager (SharedLib)
+              ├── EmailScheduler  (SharedLib)
+              ├── TicketDetailForm
+              └── StatisticsForm
+```
+
+---
+
 ## Danh sách tính năng
 
 | # | Tính năng | Gốc/Mới |
@@ -94,11 +226,11 @@ eAndon là hệ thống cảnh báo sản xuất (Andon System) dùng để qu�
 
 ```
 preAndon/
-├── README.md                     ← (file này) Tổng quan
+├── README.md                     ← (file này) Tổng quan + Giáo trình
 ├── eAndonCSharp.sln              ← Solution file Visual Studio
 │
 ├── SharedLib/                    ← Class Library (dùng chung bởi cả 2 app)
-│   ├── README.md                 ← Giải thích Models và Services
+│   ├── README.md                 ← 📖 Giáo trình: Models, Services, Analytics, Email
 │   ├── Models/
 │   │   ├── StationInfo.cs        ← Model thông tin trạm
 │   │   └── IncidentTicket.cs     ← Model phiếu sự cố + enum trạng thái
@@ -107,11 +239,24 @@ preAndon/
 │   │   ├── LineStationReader.cs  ← Đọc Workstations + Lines_stations
 │   │   ├── AlarmLogger.cs        ← Ghi log text file
 │   │   ├── IncidentService.cs    ← CRUD ticket + SQLite
-│   │   └── DailyStatsService.cs  ← Thống kê MTTR/MTBF/Availability
+│   │   ├── DailyStatsService.cs  ← Thống kê MTTR/MTBF/Availability
+│   │   ├── Analytics/
+│   │   │   ├── AnalyticsManager.cs   ← Điều phối tất cả analytics
+│   │   │   ├── DowntimeEstimator.cs  ← Dự đoán downtime (EWMA)
+│   │   │   ├── AnomalyDetector.cs    ← Phát hiện bất thường (Z-score)
+│   │   │   ├── TechnicianTracker.cs  ← Theo dõi hiệu suất KTV
+│   │   │   └── TimePatternDetector.cs← Mẫu thời gian rủi ro
+│   │   └── Email/
+│   │       ├── README.md             ← 📖 Giáo trình: Email module
+│   │       ├── EmailConfig.cs        ← Model cấu hình SMTP
+│   │       ├── EmailSender.cs        ← Gửi email qua SMTP
+│   │       ├── WeeklyReportBuilder.cs← Tạo nội dung báo cáo tuần
+│   │       ├── RealtimeAlertService.cs← Cảnh báo real-time
+│   │       └── EmailScheduler.cs     ← Lịch gửi email
 │   └── SharedLib.csproj
 │
 ├── AndonTerminal/                ← WinForms App (Operator/KTV/Leader dùng)
-│   ├── README.md                 ← Giải thích Terminal + hướng dẫn nhiều Terminal
+│   ├── README.md                 ← 📖 Giáo trình: WinForms, Events, Luồng 7 bước
 │   ├── Program.cs                ← Entry point: đọc args, khởi tạo services
 │   ├── Forms/
 │   │   ├── TerminalMainForm.cs   ← Grid chính + logic 7 bước
@@ -122,7 +267,7 @@ preAndon/
 │   └── AndonTerminal.csproj
 │
 ├── AndonDashboard/               ← WinForms App (Quản lý/Leader xem tổng quan)
-│   ├── README.md                 ← Giải thích Dashboard + cơ chế FileSystemWatcher
+│   ├── README.md                 ← 📖 Giáo trình: FileSystemWatcher, Timer, Invoke
 │   ├── Program.cs                ← Entry point
 │   ├── Forms/
 │   │   ├── DashboardMainForm.cs  ← Grid tổng quan + FileSystemWatcher
@@ -131,8 +276,8 @@ preAndon/
 │   └── AndonDashboard.csproj
 │
 ├── Assets/                       ← Tất cả file cần thiết (có sẵn trong repo)
-│   ├── README.md                 ← Giải thích từng file + nguồn icon/ảnh
-│   ├── settings.txt              ← Cấu hình hệ thống
+│   ├── README.md                 ← 📖 Giáo trình: format, cách sửa, ví dụ thực tế
+│   ├── settings.txt              ← Cấu hình hệ thống (alarm, màu, email, v.v.)
 │   ├── Workstations_terminals.txt ← Phân công Lines → Terminal
 │   ├── Lines_stations.txt        ← Danh sách Trạm trong mỗi Line
 │   ├── app.ico                   ← Icon cửa sổ (nguồn: vitplanocka/eAndon MIT)
@@ -153,10 +298,12 @@ preAndon/
 └── Docs/                         ← Tài liệu chi tiết
     ├── README.md                 ← Mục lục tài liệu
     ├── README_FULL.md            ← Tài liệu đầy đủ
-    ├── BEGINNER_GUIDE.md         ← Hướng dẫn người mới
-    ├── DATABASE.md               ← Schema database chi tiết
-    ├── UI_CUSTOMIZE.md           ← Tùy chỉnh giao diện
-    └── ANALYTICS.md              ← Tính năng thống kê/AI
+    ├── BEGINNER_GUIDE.md         ← 📖 Cài VS, mở project, build, debug, NuGet, Git
+    ├── DATABASE.md               ← 📖 Schema SQLite chi tiết + CRUD walkthrough
+    ├── ANALYTICS.md              ← 📖 4 Analytics class: thuật toán + ví dụ số liệu
+    ├── CSHARP_VS_VBNET.md        ← 📖 So sánh C# vs VB.NET dựa trên code eAndon
+    ├── FAQ.md                    ← 📖 20 câu hỏi thường gặp + đáp án
+    └── UI_CUSTOMIZE.md           ← Tùy chỉnh giao diện
 ```
 
 ---

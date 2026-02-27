@@ -1,5 +1,17 @@
 # DATABASE.md — Tài liệu chi tiết Schema Database eAndon
 
+## Tại sao chọn SQLite?
+
+| | SQLite | SQL Server / MySQL |
+|-|--------|--------------------|
+| Cài đặt | Không cần, chỉ 1 file DLL | Phải cài server riêng |
+| File database | 1 file `eandon.db` | Server process riêng biệt |
+| Backup | Copy file là xong | Cần tool riêng |
+| Performance | Đủ cho vài nghìn ticket/ngày | Cần cho hàng triệu rows/phút |
+| Phù hợp | Nhà máy nhỏ-vừa, 1 địa điểm | Nhiều site, nhiều server |
+
+**Kết luận**: eAndon dùng SQLite vì đơn giản, không cần IT setup, backup dễ dàng (copy file), và lượng dữ liệu trong 1 nhà máy vừa phải hoàn toàn phù hợp.
+
 ## Tổng quan
 
 Hệ thống eAndon sử dụng **SQLite** để lưu trữ dữ liệu cục bộ.  
@@ -8,6 +20,79 @@ File database: `Data/eandon.db` (tự tạo khi khởi động lần đầu).
 Có **2 bảng chính**:
 1. `Tickets` — lưu từng phiếu sự cố
 2. `DailyStats` — thống kê tổng hợp theo ngày/line
+
+---
+
+## CRUD walkthrough — Đối chiếu với luồng 7 bước
+
+### Bước 1-4: INSERT khi Operator báo lỗi
+
+```csharp
+// IncidentService.OpenTicket() — được gọi sau Bước 4
+var ticket = new IncidentTicket
+{
+    TicketId = "TKT-20260227-142233-456",
+    LineNumber = "010", LineName = "Line 1",
+    StationId = "ST-010-02", StationName = "Tram han diem",
+    AlarmTypeIndex = 2, AlarmTypeName = "Ho tro Bao tri",
+    Severity = "Red", Status = 2,  // Red = 2
+    ReportedAt = DateTime.Now,
+    OperatorId = "NV001", OperatorName = "Nguyen Van A"
+};
+```
+
+SQL thực tế được thực thi:
+```sql
+INSERT INTO Tickets (TicketId, LineNumber, LineName, StationId, StationName,
+    AlarmTypeIndex, AlarmTypeName, Severity, Status, ReportedAt,
+    OperatorId, OperatorName, ReportDate)
+VALUES ('TKT-20260227-142233-456', '010', 'Line 1', 'ST-010-02', 'Tram han diem',
+    2, 'Ho tro Bao tri', 'Red', 2, '2026-02-27 14:22:33',
+    'NV001', 'Nguyen Van A', '2026-02-27');
+```
+
+### Bước 5: UPDATE khi KTV nhận sửa
+
+```sql
+-- IncidentService.TechCheckIn()
+UPDATE Tickets
+SET TechCheckinAt = '2026-02-27 14:35:10',
+    TechnicianId = 'KTV005',
+    TechnicianName = 'Tran Thi B',
+    Status = 3  -- Repairing
+WHERE TicketId = 'TKT-20260227-142233-456';
+```
+
+### Bước 6: UPDATE khi KTV hoàn thành
+
+```sql
+-- IncidentService.CompleteRepair()
+UPDATE Tickets
+SET TechFixedAt = '2026-02-27 15:10:45',
+    FixNote = 'Thay motor drive, test OK',
+    Status = 4  -- WaitLeader
+WHERE TicketId = 'TKT-20260227-142233-456';
+```
+
+### Bước 7: UPDATE khi Leader xác nhận + UPSERT DailyStats
+
+```sql
+-- IncidentService.LeaderConfirm()
+UPDATE Tickets
+SET LeaderConfirmedAt = '2026-02-27 15:20:00',
+    LeaderId = 'LDR002',
+    LeaderName = 'Le Van C',
+    Status = 5  -- Closed
+WHERE TicketId = 'TKT-20260227-142233-456';
+
+-- DailyStatsService.UpdateForLine() — tự động sau LeaderConfirm
+INSERT INTO DailyStats (StatsDate, LineNumber, LineName, TotalIncidents, ...)
+VALUES ('2026-02-27', '010', 'Line 1', 1, ...)
+ON CONFLICT(StatsDate, LineNumber) DO UPDATE SET
+    TotalIncidents = TotalIncidents + 1,
+    TotalDowntimeSec = TotalDowntimeSec + 3447,  -- 57.45 phút
+    ...;
+```
 
 ---
 

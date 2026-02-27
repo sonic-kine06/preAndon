@@ -932,11 +932,26 @@ ALTER TABLE Tickets ADD COLUMN ShiftName TEXT;
 
 ### 8.1 Dùng Breakpoint trong Visual Studio
 
-1. Click vào **cạnh trái** dòng code muốn dừng lại → xuất hiện **chấm đỏ** 🔴.
-2. Nhấn **F5** để chạy ở chế độ Debug.
-3. Khi chạy đến dòng đó, chương trình dừng lại.
-4. Dùng cửa sổ **Locals** / **Watch** để xem giá trị biến.
-5. Nhấn **F10** để chạy từng dòng, **F5** để tiếp tục.
+**Breakpoint** = điểm dừng trong code. Khi chạy Debug, chương trình dừng lại tại đó để bạn kiểm tra giá trị biến.
+
+**Ví dụ thực tế với eAndon**: Bạn muốn xem lúc Operator click ô xanh, biến `cellData` có đúng không.
+
+1. Mở `TerminalMainForm.cs`
+2. Click vào cạnh trái dòng `HandleGreenClick(cellData)` → xuất hiện **chấm đỏ 🔴**
+3. Nhấn **F5** để chạy Debug
+4. Trên Terminal, click vào 1 ô xanh → Visual Studio dừng lại tại breakpoint
+5. Di chuột lên `cellData` trong code → tooltip hiện giá trị
+6. Cửa sổ **Locals** (bên dưới) → thấy tất cả biến đang có
+7. Cửa sổ **Watch** → gõ biểu thức bất kỳ để xem: `cellData.LineNumber`, `cellData.AlarmTypeIndex`, v.v.
+
+**Phím tắt Debug**:
+| Phím | Hành động |
+|------|-----------|
+| F5 | Chạy/Tiếp tục Debug |
+| F9 | Bật/Tắt breakpoint tại dòng hiện tại |
+| F10 | Step Over — chạy dòng hiện tại, KHÔNG vào hàm được gọi |
+| F11 | Step Into — chạy dòng hiện tại, VÀO hàm được gọi |
+| Shift+F5 | Dừng Debug |
 
 ### 8.2 In ra để debug (Debug.WriteLine)
 
@@ -951,7 +966,61 @@ Debug.WriteLine($"[DEBUG] Cell status = {cell.Status}");
 // Xem kết quả trong Visual Studio → menu View → Output Window
 ```
 
-### 8.3 Lỗi thường gặp và cách sửa
+### 8.3 NuGet — Quản lý thư viện bên ngoài
+
+**NuGet** là hệ thống quản lý package cho .NET — giống `pip` trong Python hay `npm` trong Node.js.
+
+**eAndon dùng NuGet để cài**: `System.Data.SQLite` (kết nối SQLite database)
+
+**Cách xem packages đã cài**:
+- Chuột phải `SharedLib` trong Solution Explorer → **Manage NuGet Packages**
+- Tab **Installed** → thấy `System.Data.SQLite 1.0.118`
+
+**Cách restore packages khi lần đầu clone** (nếu build lỗi `missing reference`):
+```
+Chuột phải Solution (dòng trên cùng trong Solution Explorer)
+→ Restore NuGet Packages
+```
+
+Hoặc qua command line:
+```bash
+dotnet restore
+```
+
+**Cách cài thêm package mới**:
+1. Chuột phải project cần thêm → **Manage NuGet Packages**
+2. Tab **Browse** → gõ tên package → chọn → **Install**
+3. Hoặc qua Package Manager Console:
+   ```
+   Tools → NuGet Package Manager → Package Manager Console
+   PM> Install-Package TenPackage -ProjectName TenProject
+   ```
+
+### 8.4 Git trong Visual Studio — Commit, Push, Pull
+
+Visual Studio có giao diện Git tích hợp sẵn (menu **Git** hoặc cửa sổ **Git Changes**).
+
+**Xem thay đổi**: Menu **Git → Git Changes** (Ctrl+0, Ctrl+G) → thấy các file đã sửa
+
+**Commit thay đổi**:
+1. Cửa sổ Git Changes → gõ message vào ô **Enter a message**
+2. Nhấn **Commit All** (chỉ lưu local) hoặc **Commit All and Push** (lưu + đẩy lên GitHub)
+
+**Pull (lấy code mới từ GitHub)**:
+- Menu **Git → Pull** hoặc nhấn mũi tên xuống ↓ trong thanh trạng thái dưới cùng
+
+**Thao tác thường dùng với eAndon**:
+```
+Bạn sửa settings.txt hoặc sửa code xong:
+1. Git Changes → thấy file đã sửa
+2. Gõ message: "Update alarm types in settings.txt"
+3. Commit All and Push → code lên GitHub
+```
+
+> **Lưu ý**: `Data/`, `Logs/`, và `Assets/settings.txt` (nếu có password) nên trong `.gitignore`  
+> để không vô tình commit data nhạy cảm lên GitHub.
+
+### 8.5 Lỗi thường gặp và cách sửa
 
 | Lỗi | Nguyên nhân | Cách sửa |
 |-----|-------------|----------|
@@ -961,8 +1030,9 @@ Debug.WriteLine($"[DEBUG] Cell status = {cell.Status}");
 | Không nghe âm thanh | File WAV không tồn tại | Đặt file vào `Assets/` và kiểm tra tên |
 | Build lỗi `CS0246` | Thiếu `using` directive | Thêm `using SharedLib.Models;` hoặc namespace phù hợp |
 | `SQLiteException: table already exists` | Chạy lần đầu bình thường | Không sao, `CREATE TABLE IF NOT EXISTS` tự bỏ qua |
+| `missing reference SharedLib` | NuGet chưa restore | Chuột phải Solution → Restore NuGet Packages |
 
-### 8.4 Xem log file
+### 8.6 Xem log file
 
 Mỗi ngày có 1 file log tại `Logs/alarmlog_YYYY-MM-DD.txt`:
 
@@ -1033,9 +1103,12 @@ Event DateTime | 2026-02-27 09:15:30; Workstation | 010 - Trạm cắt laser; Al
 | File | Nội dung |
 |------|---------|
 | `Docs/UI_CUSTOMIZE.md` | Giải thích chi tiết từng Form, cách thiết kế lại giao diện |
-| `Docs/DATABASE.md` | Cấu trúc bảng SQLite chi tiết |
-| `Docs/ANALYTICS.md` | Giải thích các model Analytics |
+| `Docs/DATABASE.md` | Cấu trúc bảng SQLite chi tiết, CRUD walkthrough |
+| `Docs/ANALYTICS.md` | Giải thích các model Analytics (EWMA, Z-score, v.v.) |
+| `Docs/CSHARP_VS_VBNET.md` | So sánh C# và VB.NET dựa trên code eAndon thực tế |
+| `Docs/FAQ.md` | 20 câu hỏi thường gặp với đáp án |
 | `Docs/README_FULL.md` | Tài liệu đầy đủ hệ thống |
+| `SharedLib/Services/Email/README.md` | Hướng dẫn cấu hình Email notification |
 
 ---
 

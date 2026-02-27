@@ -47,6 +47,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Windows.Forms;
 using SharedLib.Models;
@@ -121,7 +122,9 @@ namespace AndonTerminal.Forms
             if (!Directory.Exists(_dataDirectory))
                 Directory.CreateDirectory(_dataDirectory);
 
-            // Đặt icon cửa sổ từ Assets/app.ico (từ vitplanocka/eAndon, MIT license)
+            // ── Icon cửa sổ ──
+            // Nguồn: Assets/app.ico — lấy từ https://github.com/vitplanocka/eAndon (MIT License)
+            // Xem attribution chi tiết tại Assets/NOTICE.txt
             string iconPath = _assetsDirectory != null
                 ? Path.Combine(_assetsDirectory, "app.ico")
                 : null;
@@ -132,7 +135,12 @@ namespace AndonTerminal.Forms
                 this.Icon = appIcon;
             }
 
-            _workstations = _lineStationReader.GetWorkstations();
+            // BUG FIX: phải lọc theo _terminalName để mỗi Terminal chỉ hiển thị
+            // các Lines được phân công cho nó trong Workstations_terminals.txt.
+            // Nếu KHÔNG lọc → terminal01 sẽ hiển thị tất cả 6 Lines thay vì chỉ Lines 1-2.
+            _workstations = _lineStationReader.GetWorkstations()
+                .Where(w => string.Equals(w.Terminal, _terminalName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             InitializeUI();
             LoadGridState();
@@ -223,7 +231,9 @@ namespace AndonTerminal.Forms
                 // xPos tính từ: startX + cột header bên trái + (chỉ số cột - 1) * (rộng ô + padding)
                 int xPos = startX + rowHeaderW + (i - 1) * (cellWidth + padding);
 
-                // Thử tải icon ảnh từ Assets/Icon{i}.png (từ vitplanocka/eAndon, MIT license)
+                // ── Icon alarm column header ──
+                // Nguồn: Assets/Icon1-5.png — lấy từ https://github.com/vitplanocka/eAndon (MIT License)
+                // Xem attribution chi tiết tại Assets/NOTICE.txt
                 string imgFile = _assetsDirectory != null
                     ? Path.Combine(_assetsDirectory, _settings.GetAlarmImageFile(i))
                     : null;
@@ -653,7 +663,10 @@ namespace AndonTerminal.Forms
         {
             try
             {
-                // _assetsDirectory được truyền từ Program.cs (4 cấp lên từ bin/Debug/net8.0-windows/)
+                // ── Âm thanh alarm ──
+                // Nguồn: Assets/alarm.wav — lấy từ https://github.com/vitplanocka/eAndon (MIT License)
+                // Xem attribution chi tiết tại Assets/NOTICE.txt
+                // Nếu file không tồn tại → dùng âm thanh hệ thống thay thế (không crash)
                 string assetBase = _assetsDirectory ?? AppDomain.CurrentDomain.BaseDirectory;
                 string soundFile = Path.Combine(assetBase, _settings.AlarmSoundFile);
                 if (File.Exists(soundFile))

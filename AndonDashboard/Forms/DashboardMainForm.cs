@@ -113,7 +113,9 @@ namespace AndonDashboard.Forms
             _dataDirectory = dataDirectory;
             _assetsDirectory = assetsDirectory;
 
-            // Đặt icon cửa sổ từ Assets/app.ico (từ vitplanocka/eAndon, MIT license)
+            // ── Icon cửa sổ ──
+            // Nguồn: Assets/app.ico — lấy từ https://github.com/vitplanocka/eAndon (MIT License)
+            // Xem attribution chi tiết tại Assets/NOTICE.txt
             string iconPath = _assetsDirectory != null
                 ? Path.Combine(_assetsDirectory, "app.ico")
                 : null;

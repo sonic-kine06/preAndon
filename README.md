@@ -90,11 +90,15 @@ eAndon là hệ thống cảnh báo sản xuất (Andon System) dùng để qu�
 
 ## Cấu trúc thư mục
 
+> 📖 Mỗi thư mục đều có file `README.md` riêng giải thích chi tiết.
+
 ```
 preAndon/
+├── README.md                     ← (file này) Tổng quan
 ├── eAndonCSharp.sln              ← Solution file Visual Studio
 │
-├── SharedLib/                    ← Class Library (dùng chung)
+├── SharedLib/                    ← Class Library (dùng chung bởi cả 2 app)
+│   ├── README.md                 ← Giải thích Models và Services
 │   ├── Models/
 │   │   ├── StationInfo.cs        ← Model thông tin trạm
 │   │   └── IncidentTicket.cs     ← Model phiếu sự cố + enum trạng thái
@@ -107,7 +111,8 @@ preAndon/
 │   └── SharedLib.csproj
 │
 ├── AndonTerminal/                ← WinForms App (Operator/KTV/Leader dùng)
-│   ├── Program.cs
+│   ├── README.md                 ← Giải thích Terminal + hướng dẫn nhiều Terminal
+│   ├── Program.cs                ← Entry point: đọc args, khởi tạo services
 │   ├── Forms/
 │   │   ├── TerminalMainForm.cs   ← Grid chính + logic 7 bước
 │   │   ├── StationSelectForm.cs  ← Popup chọn trạm
@@ -117,29 +122,62 @@ preAndon/
 │   └── AndonTerminal.csproj
 │
 ├── AndonDashboard/               ← WinForms App (Quản lý/Leader xem tổng quan)
-│   ├── Program.cs
+│   ├── README.md                 ← Giải thích Dashboard + cơ chế FileSystemWatcher
+│   ├── Program.cs                ← Entry point
 │   ├── Forms/
 │   │   ├── DashboardMainForm.cs  ← Grid tổng quan + FileSystemWatcher
 │   │   ├── TicketDetailForm.cs   ← Chi tiết 1 ticket
 │   │   └── StatisticsForm.cs     ← Thống kê DailyStats
 │   └── AndonDashboard.csproj
 │
-├── Assets/
+├── Assets/                       ← Tất cả file cần thiết (có sẵn trong repo)
+│   ├── README.md                 ← Giải thích từng file + nguồn icon/ảnh
 │   ├── settings.txt              ← Cấu hình hệ thống
-│   ├── Workstations_terminals.txt ← Danh sách Line/Terminal (format gốc)
-│   └── Lines_stations.txt        ← Danh sách Trạm trong mỗi Line (format mới)
+│   ├── Workstations_terminals.txt ← Phân công Lines → Terminal
+│   ├── Lines_stations.txt        ← Danh sách Trạm trong mỗi Line
+│   ├── app.ico                   ← Icon cửa sổ (nguồn: vitplanocka/eAndon MIT)
+│   ├── Icon1-5.png               ← Icon alarm types (nguồn: vitplanocka/eAndon MIT)
+│   ├── logo.png                  ← Logo công ty (nguồn: vitplanocka/eAndon MIT)
+│   ├── alarm.wav                 ← Âm thanh cảnh báo (nguồn: vitplanocka/eAndon MIT)
+│   └── NOTICE.txt                ← Attribution MIT License
 │
-├── Data/                         ← Tự tạo khi chạy
+├── Data/                         ← Tự tạo khi chạy (trong .gitignore)
 │   ├── eandon.db                 ← SQLite database
-│   └── terminal01.txt            ← File giao tiếp Terminal → Dashboard
+│   ├── terminal01.txt            ← File giao tiếp Terminal01 → Dashboard
+│   ├── terminal02.txt            ← File giao tiếp Terminal02 → Dashboard
+│   └── terminal0N.txt            ← ... (1 file per terminal)
 │
-├── Logs/                         ← Tự tạo khi chạy
+├── Logs/                         ← Tự tạo khi chạy (trong .gitignore)
 │   └── alarmlog_yyyy-MM-dd.txt   ← Log alarm theo ngày
 │
-└── Docs/
+└── Docs/                         ← Tài liệu chi tiết
+    ├── README.md                 ← Mục lục tài liệu
     ├── README_FULL.md            ← Tài liệu đầy đủ
-    └── DATABASE.md               ← Schema database chi tiết
+    ├── BEGINNER_GUIDE.md         ← Hướng dẫn người mới
+    ├── DATABASE.md               ← Schema database chi tiết
+    ├── UI_CUSTOMIZE.md           ← Tùy chỉnh giao diện
+    └── ANALYTICS.md              ← Tính năng thống kê/AI
 ```
+
+---
+
+## Chạy nhiều Terminal cùng lúc
+
+**Ví dụ**: 3 Terminal cho 6 Lines, 1 Dashboard giám sát tất cả.
+
+```bash
+# Chạy 3 Terminal (mỗi cái 1 cửa sổ riêng)
+dotnet run --project AndonTerminal -- terminal01   # Line 1, 2
+dotnet run --project AndonTerminal -- terminal02   # Line 3, 4
+dotnet run --project AndonTerminal -- terminal03   # Line 5, 6
+
+# Chạy Dashboard (1 cửa sổ, giám sát tất cả)
+dotnet run --project AndonDashboard
+```
+
+**Dashboard KHÔNG cần cấu hình thêm** — tự động đọc `Data/terminal01.txt`, `Data/terminal02.txt`, `Data/terminal03.txt` ngay khi chúng xuất hiện.
+
+Xem thêm: [`AndonTerminal/README.md`](AndonTerminal/README.md)
 
 ---
 
@@ -198,9 +236,11 @@ preAndon/
 
 ## Hướng dẫn cài đặt Visual Studio
 
+> 💡 Xem thêm tài liệu đầy đủ tại [`Docs/BEGINNER_GUIDE.md`](Docs/BEGINNER_GUIDE.md)
+
 ### Yêu cầu
 - Visual Studio 2022 (Community hoặc cao hơn)
-- .NET 6.0 SDK
+- **.NET 8.0 SDK** (dự án dùng net8.0-windows)
 - Workload: ".NET desktop development"
 
 ### Các bước
